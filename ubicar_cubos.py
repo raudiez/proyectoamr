@@ -79,7 +79,7 @@ def find_workzone(img):
       for cnt in contours:
         cnt_len = cv2.arcLength(cnt, True)
         cnt = cv2.approxPolyDP(cnt, 0.02*cnt_len, True)
-        if len(cnt) == 4 and cv2.contourArea(cnt) > 4000 and cv2.contourArea(cnt) < 110000 and cv2.isContourConvex(cnt):
+        if len(cnt) == 4 and cv2.contourArea(cnt) > 40000 and cv2.contourArea(cnt) < 110000 and cv2.isContourConvex(cnt):
           cnt = cnt.reshape(-1, 2)
           encontrado = False
           for i in previous:
@@ -98,12 +98,12 @@ def find_workzone(img):
 if __name__ == '__main__':
 #  cam = cv2.VideoCapture(0)
 #  ret, img = cam.read()
-  img = cv2.imread('cubos4.png')
+  img = cv2.imread('cubos5.png')
   workzone = find_workzone(img)
   cv2.drawContours( img, workzone, -1, (0, 255, 0), 2 )
-  cv2.imshow('Cube detection', img)
-  ch = 0xFF & cv2.waitKey()
-  cv2.destroyAllWindows()
+#  cv2.imshow('Cube detection', img)
+#  ch = 0xFF & cv2.waitKey()
+#  cv2.destroyAllWindows()
   squares = find_squares(img)
   cv2.drawContours( img, squares, -1, (0, 0, 255), 3 )
   cv2.imshow('Cube detection', img)
