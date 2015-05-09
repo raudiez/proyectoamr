@@ -1,6 +1,9 @@
 import numpy as np
 import cv2
-from math import atan, degrees
+from math import atan, degrees , sqrt, pow
+
+squares = []
+centers = []
 
 def angle_cos(p0, p1, p2):
   d1, d2 = (p0-p1).astype('float'), (p2-p1).astype('float')
@@ -8,9 +11,9 @@ def angle_cos(p0, p1, p2):
 
 def find_squares(img):
   img = cv2.GaussianBlur(img, (5, 5), 0)
-  squares = []
+  global squares
+  global centers
   previous = []
-  centers = []
   cont = 0
   center = [0,0]
   sideColor = 0
@@ -37,13 +40,13 @@ def find_squares(img):
           if max_cos < 0.1 and not encontrado:
             squares.append(cnt)
             previous.append(cnt[0])
-            print "P1. X=",cnt[0][0]/3.78,"Y=",cnt[0][1]/3.78
+            # print "P1. X=",cnt[0][0]/3.78,"Y=",cnt[0][1]/3.78
             previous.append(cnt[1])
-            print "P2. X=",cnt[1][0]/3.78,"Y=",cnt[1][1]/3.78
+            # print "P2. X=",cnt[1][0]/3.78,"Y=",cnt[1][1]/3.78
             previous.append(cnt[2])
-            print "P3. X=",cnt[2][0]/3.78,"Y=",cnt[2][1]/3.78
+            # print "P3. X=",cnt[2][0]/3.78,"Y=",cnt[2][1]/3.78
             previous.append(cnt[3])
-            print "P4. X=",cnt[3][0]/3.78,"Y=",cnt[3][1]/3.78
+            # print "P4. X=",cnt[3][0]/3.78,"Y=",cnt[3][1]/3.78
             center[0]=(cnt[0][0]+cnt[2][0])/2 # Center's X.
             cx=center[0]/3.78
             center[1]=(cnt[0][1]+cnt[2][1])/2  # Center's Y.
@@ -64,7 +67,7 @@ def find_workzone(img):
   img = cv2.GaussianBlur(img, (5, 5), 0)
   squares = []
   previous = []
-  centers = []
+  global centers
   center = [0,0]
   sideColor = 0
   alpha = 0
@@ -90,15 +93,14 @@ def find_workzone(img):
           if max_cos < 0.1 and not encontrado:
             squares.append(cnt)
             previous.append(cnt[0])
-            center[0]=((cnt[0][0]+cnt[2][0])/2)/3.78 # Center's X.
-            center[1]=((cnt[0][1]+cnt[2][1])/2)/3.78 # Center's Y.
-            print "Encontrado centro de zona de trabajo en",center
+            centers.append([(cnt[0][0]+cnt[2][0])/2,(cnt[0][1]+cnt[2][1])/2])
+            print "Encontrado centro de zona de trabajo en [",((cnt[0][0]+cnt[2][0])/2)/3.78,",",((cnt[0][1]+cnt[2][1])/2)/3.78,"] mm"
   return squares
 
 if __name__ == '__main__':
 #  cam = cv2.VideoCapture(0)
 #  ret, img = cam.read()
-  img = cv2.imread('cubos5.png')
+  img = cv2.imread('cubos4.png')
   workzone = find_workzone(img)
   cv2.drawContours( img, workzone, -1, (0, 255, 0), 2 )
   squares = find_squares(img)
@@ -106,4 +108,3 @@ if __name__ == '__main__':
   cv2.imshow('Cube detection', img)
   ch = 0xFF & cv2.waitKey()
   cv2.destroyAllWindows()
-
