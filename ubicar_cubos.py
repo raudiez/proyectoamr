@@ -46,11 +46,11 @@ def find_squares(img):
             previous.append(cnt[1])
             previous.append(cnt[2])
             previous.append(cnt[3])
-            center=[(cnt[0][0]+cnt[2][0])/2,(cnt[0][1]+cnt[2][1])/2]
-            alpha=degrees(atan((cnt[1][1]-cnt[0][1])/(cnt[1][0]-cnt[0][0])))
+            center = [(cnt[0][0]+cnt[2][0])/2,(cnt[0][1]+cnt[2][1])/2]
+            alpha = degrees(atan((cnt[1][1]-cnt[0][1])/(cnt[1][0]-cnt[0][0])))
             centers.append([(cnt[0][0]+cnt[2][0])/2,(cnt[0][1]+cnt[2][1])/2])
             imggray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-            sideColor=imggray[center[1]][center[0]] # Color de cara superior
+            sideColor = imggray[center[1]][center[0]] # Color de cara superior
             if sideColor >= 100 :
               color = "blanco"
             else :
@@ -62,7 +62,6 @@ def find_workzone(img):
   img = cv2.GaussianBlur(img, (5, 5), 0)
   global workzone
   previous = []
-  center = [0,0]
   for gray in cv2.split(img):
     for thrs in xrange(0, 255, 26):
       if thrs == 0:
@@ -86,9 +85,9 @@ def find_workzone(img):
             workzone.append(cnt)
             previous.append(cnt[0])
             global centro_ladosup_workzone
-            centro_ladosup_workzone=[(workzone[0][0][0]+workzone[0][1][0])/2,(workzone[0][0][1]+workzone[0][1][1])/2]
+            centro_ladosup_workzone = [(workzone[0][0][0]+workzone[0][1][0])/2,(workzone[0][0][1]+workzone[0][1][1])/2]
             global centro_ladoinf_workzone
-            centro_ladoinf_workzone=[(workzone[0][2][0]+workzone[0][3][0])/2,(workzone[0][2][1]+workzone[0][3][1])/2]
+            centro_ladoinf_workzone = [(workzone[0][2][0]+workzone[0][3][0])/2,(workzone[0][2][1]+workzone[0][3][1])/2]
 
 if __name__ == '__main__':
 #  cam = cv2.VideoCapture(0)
