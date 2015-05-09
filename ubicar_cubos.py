@@ -98,8 +98,22 @@ def find_workzone(img):
             global centro_ladoinf_workzone
             centro_ladoinf_workzone = [(workzone[0][2][0]+workzone[0][3][0])/2,(workzone[0][2][1]+workzone[0][3][1])/2]
 
-def change_SR:
-
+def change_SR():
+  for square in squares:
+    p1 = square[0]
+    p2 = square[1]
+    p3 = square[2]
+    p4 = square[3]
+    print p1
+    print p2
+    print p3
+    print p4
+    xList = [p[0] for p in square]
+    yList = [p[1] for p in square]
+    print xList
+    r=[xList[0]/yList[0],xList[1]/yList[1],xList[2]/yList[2],xList[3]/yList[3]]
+    print r
+    print map(min, [r])
 
 if __name__ == '__main__':
 #  cam = cv2.VideoCapture(0)
@@ -111,9 +125,9 @@ if __name__ == '__main__':
   cv2.drawContours(img, squares, -1, ROJO, 3)
   cv2.line(img, (centro_ladosup_workzone[0],centro_ladosup_workzone[1]), (centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]), AZUL, 1)
   print "El nuevo origen de coordenadas sera [",centro_ladoinf_workzone[0]/3.78,",",centro_ladoinf_workzone[1]/3.78,"] mm"
-  print centers
   for i in centers:
     cv2.line(img, (centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]), (i[0],i[1]), NARANJA, 1)
+  change_SR()
   cv2.imshow('Cube detection', img)
   ch = 0xFF & cv2.waitKey()
   cv2.destroyAllWindows()
