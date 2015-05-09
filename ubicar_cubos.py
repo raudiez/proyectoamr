@@ -3,9 +3,10 @@ import cv2
 from math import atan, degrees , sqrt, pow
 
 ##########Variables globales#################
-squares = []
+squares = [] #Cuadrados encontrados, respecto a (0,0) de img.
 centers = []
 workzone = []
+newsquares = [] #Cuadrados calculados, respecto a (0,0) del nuevo SR.
 centro_ladosup_workzone = [0,0]
 centro_ladoinf_workzone = [0,0]
 #Colores para pintar:
@@ -55,7 +56,7 @@ def find_squares(img):
             previous.append(cnt[2])
             previous.append(cnt[3])
             center = [(cnt[0][0]+cnt[2][0])/2,(cnt[0][1]+cnt[2][1])/2]
-            alpha = degrees(atan((cnt[1][1]-cnt[0][1])/(cnt[1][0]-cnt[0][0])))
+            #alpha = degrees(atan((cnt[1][1]-cnt[0][1])/(cnt[1][0]-cnt[0][0])))
             centers.append([(cnt[0][0]+cnt[2][0])/2,(cnt[0][1]+cnt[2][1])/2])
             imggray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
             sideColor = imggray[center[1]][center[0]] # Color de cara superior
@@ -63,7 +64,7 @@ def find_squares(img):
               color = "blanco"
             else :
               color = "negro"
-            print "Encontrado cubo numero",cont+1,"con centro en [",center[0]/3.78,",",center[1]/3.78,"] mm y es de color",color,"y con inclinacion",alpha,"grados"
+            print "Encontrado cubo numero",cont+1,"con centro en [",center[0]/3.78,",",center[1]/3.78,"] mm y es de color",color
             cont+=1
 
 def find_workzone(img):
@@ -96,6 +97,9 @@ def find_workzone(img):
             centro_ladosup_workzone = [(workzone[0][0][0]+workzone[0][1][0])/2,(workzone[0][0][1]+workzone[0][1][1])/2]
             global centro_ladoinf_workzone
             centro_ladoinf_workzone = [(workzone[0][2][0]+workzone[0][3][0])/2,(workzone[0][2][1]+workzone[0][3][1])/2]
+
+def change_SR:
+
 
 if __name__ == '__main__':
 #  cam = cv2.VideoCapture(0)
