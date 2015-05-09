@@ -2,12 +2,20 @@ import numpy as np
 import cv2
 from math import atan, degrees , sqrt, pow
 
-#Variables globales
+##########Variables globales#################
 squares = []
 centers = []
 workzone = []
 centro_ladosup_workzone = [0,0]
 centro_ladoinf_workzone = [0,0]
+#Colores para pintar:
+ROJO=(0,0,255)
+AZUL=(255,0,0)
+VERDE=(0,255,0)
+AMARILLO=(0,255,255)
+NARANJA=(0,150,255)
+BLANCO=(255,255,255)
+NEGRO=(0,0,0)
 
 def angle_cos(p0, p1, p2):
   d1, d2 = (p0-p1).astype('float'), (p2-p1).astype('float')
@@ -94,11 +102,14 @@ if __name__ == '__main__':
 #  ret, img = cam.read()
   img = cv2.imread('cubos4.png')
   find_workzone(img)
-  cv2.drawContours(img, workzone, -1, (0, 255, 0), 2)
+  cv2.drawContours(img, workzone, -1, VERDE, 2)
   find_squares(img)
-  cv2.drawContours(img, squares, -1, (0, 0, 255), 3)
-  cv2.line(img, (centro_ladosup_workzone[0],centro_ladosup_workzone[1]), (centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]), (255, 0, 0), 1)
+  cv2.drawContours(img, squares, -1, ROJO, 3)
+  cv2.line(img, (centro_ladosup_workzone[0],centro_ladosup_workzone[1]), (centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]), AZUL, 1)
   print "El nuevo origen de coordenadas sera [",centro_ladoinf_workzone[0]/3.78,",",centro_ladoinf_workzone[1]/3.78,"] mm"
+  print centers
+  for i in centers:
+    cv2.line(img, (centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]), (i[0],i[1]), NARANJA, 1)
   cv2.imshow('Cube detection', img)
   ch = 0xFF & cv2.waitKey()
   cv2.destroyAllWindows()
