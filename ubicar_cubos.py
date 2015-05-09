@@ -2,8 +2,12 @@ import numpy as np
 import cv2
 from math import atan, degrees , sqrt, pow
 
+#Variables globales
 squares = []
 centers = []
+workzone = []
+centro_ladosup_workzone = [0,0]
+centro_ladoinf_workzone = [0,0]
 
 def angle_cos(p0, p1, p2):
   d1, d2 = (p0-p1).astype('float'), (p2-p1).astype('float')
@@ -40,13 +44,9 @@ def find_squares(img):
           if max_cos < 0.1 and not encontrado:
             squares.append(cnt)
             previous.append(cnt[0])
-            # print "P1. X=",cnt[0][0]/3.78,"Y=",cnt[0][1]/3.78
             previous.append(cnt[1])
-            # print "P2. X=",cnt[1][0]/3.78,"Y=",cnt[1][1]/3.78
             previous.append(cnt[2])
-            # print "P3. X=",cnt[2][0]/3.78,"Y=",cnt[2][1]/3.78
             previous.append(cnt[3])
-            # print "P4. X=",cnt[3][0]/3.78,"Y=",cnt[3][1]/3.78
             center[0]=(cnt[0][0]+cnt[2][0])/2 # Center's X.
             cx=center[0]/3.78
             center[1]=(cnt[0][1]+cnt[2][1])/2  # Center's Y.
@@ -61,16 +61,13 @@ def find_squares(img):
               color = "negro"
             print "Encontrado cubo numero",cont+1,"con centro en [",cx,",",cy,"] mm y es de color",color,"y con inclinacion",alpha,"grados"
             cont+=1
-  return squares
 
 def find_workzone(img):
   img = cv2.GaussianBlur(img, (5, 5), 0)
-  squares = []
-  previous = []
+  global workzone
   global centers
+  previous = []
   center = [0,0]
-  sideColor = 0
-  alpha = 0
   for gray in cv2.split(img):
     for thrs in xrange(0, 255, 26):
       if thrs == 0:
@@ -91,20 +88,26 @@ def find_workzone(img):
               break
           max_cos = np.max([angle_cos( cnt[i], cnt[(i+1) % 4], cnt[(i+2) % 4] ) for i in xrange(4)])
           if max_cos < 0.1 and not encontrado:
-            squares.append(cnt)
+            workzone.append(cnt)
             previous.append(cnt[0])
             centers.append([(cnt[0][0]+cnt[2][0])/2,(cnt[0][1]+cnt[2][1])/2])
+            global centro_ladosup_workzone
+            centro_ladosup_workzone[0]=(workzone[0][0][0]+workzone[0][1][0])/2
+            centro_ladosup_workzone[1]=(workzone[0][0][1]+workzone[0][1][1])/2
+            global centro_ladoinf_workzone
+            centro_ladoinf_workzone[0]=(workzone[0][2][0]+workzone[0][3][0])/2
+            centro_ladoinf_workzone[1]=(workzone[0][2][1]+workzone[0][3][1])/2
             print "Encontrado centro de zona de trabajo en [",((cnt[0][0]+cnt[2][0])/2)/3.78,",",((cnt[0][1]+cnt[2][1])/2)/3.78,"] mm"
-  return squares
 
 if __name__ == '__main__':
 #  cam = cv2.VideoCapture(0)
 #  ret, img = cam.read()
   img = cv2.imread('cubos4.png')
-  workzone = find_workzone(img)
-  cv2.drawContours( img, workzone, -1, (0, 255, 0), 2 )
-  squares = find_squares(img)
-  cv2.drawContours( img, squares, -1, (0, 0, 255), 3 )
+  find_workzone(img)
+  cv2.drawContours(img, workzone, -1, (0, 255, 0), 2)
+  find_squares(img)
+  cv2.drawContours(img, squares, -1, (0, 0, 255), 3)
+  cv2.line(img, (centro_ladosup_workzone[0],centro_ladosup_workzone[1]), (centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]), (255, 0, 0), 1)
   cv2.imshow('Cube detection', img)
   ch = 0xFF & cv2.waitKey()
   cv2.destroyAllWindows()
