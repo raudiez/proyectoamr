@@ -1,12 +1,17 @@
+#### TO DO: -distancia desde el nuevo SR hasta el centro de los cubos.
+####        -reconocer unicamente 1 cubo cada vez, para la version final.
+
 import numpy as np
 import cv2
 from math import atan, degrees , sqrt, pow
 
 ##########Variables globales#################
 squares = [] #Cubos encontrados, respecto a (0,0) de img.
-sorted_cubes = [] #Cubos con vertices ordenados a menor Y (para angulos).
+sorted_cubes = [] #Cubos con vertices ordenados por menor Y (para angulos).
 new_sides_angles = []
 new_centres = []
+arm_angles = []
+hand_angles = []
 centers = []
 workzone = []
 newsquares = [] #Cuadrados calculados, respecto a (0,0) del nuevo SR.
@@ -26,6 +31,9 @@ def angle_cos(p0, p1, p2):
   d1, d2 = (p0-p1).astype('float'), (p2-p1).astype('float')
   return abs( np.dot(d1, d2) / np.sqrt( np.dot(d1, d1)*np.dot(d2, d2) ) )
 
+
+#Funcion que encuentra los cuadrados de las caras superiores de cada cubo,
+#obtiene los cuadrados del contorno, y los centros.
 def find_squares(img):
   img = cv2.GaussianBlur(img, (5, 5), 0)
   global sorted_cubes
@@ -49,24 +57,31 @@ def find_squares(img):
         if len(cnt) == 4 and cv2.contourArea(cnt) > 1200 and cv2.contourArea(cnt) < 3500 and cv2.isContourConvex(cnt):
           cnt = cnt.reshape(-1, 2)
           encontrado = False
+          #Se hace un bucle para buscar dentro de los contornos los más próximos
+          #para cada cubo.
           for i in previous:
             if i[0] == cnt[0][0] or (i[0] <= cnt[0][0]+3 and i[0] >= cnt[0][0]-3) :
+              #Si se encuentra este contorno en los anteriormente analizados,
+              #no se usa.
               encontrado = True
               break
           max_cos = np.max([angle_cos( cnt[i], cnt[(i+1) % 4], cnt[(i+2) % 4] ) for i in xrange(4)])
           if max_cos < 0.1 and not encontrado:
+            #Se almacena el contorno del cuadrado con sus vertices, se almacena
+            #como analizado tambien.
             squares.append(cnt)
             previous.append(cnt[0])
             previous.append(cnt[1])
             previous.append(cnt[2])
             previous.append(cnt[3])
-            #Creo cubos ordenados, para luego.
+            #Se ordenan los vertices de los cubos, para luego usarlos para
+            #los angulos.
             cubo = np.copy(cnt)
             dt = [('col1', cubo.dtype),('col2', cubo.dtype)]
             aux = cubo.ravel().view(dt)
             aux.sort(order=['col2','col1'])
             sorted_cubes.append(cubo)
-
+            #Se obtienen el centro del cuadrado, y se saca el color de la cara.
             center = [(cnt[0][0]+cnt[2][0])/2,(cnt[0][1]+cnt[2][1])/2]
             centers.append([(cnt[0][0]+cnt[2][0])/2,(cnt[0][1]+cnt[2][1])/2])
             imggray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
@@ -78,6 +93,10 @@ def find_squares(img):
             print "Encontrado cubo numero",cont+1,"con centro en [",center[0]/3.78,",",center[1]/3.78,"] mm y es de color",color
             cont+=1
 
+#Se encuentra un rectangulo de area mayor que los cubos, que los contiene y
+#vale de referencia para ubicacion. Hace practicamente lo mismo que la funcion
+#anterior para los cubos. Obtiene ademas puntos de referencia a mitad del
+#rectangulo de referencia para construir un eje de coordenadas.
 def find_workzone(img):
   img = cv2.GaussianBlur(img, (5, 5), 0)
   global workzone
@@ -109,6 +128,8 @@ def find_workzone(img):
             global bottomside_center_worzone
             bottomside_center_worzone = [(workzone[0][2][0]+workzone[0][3][0])/2,(workzone[0][2][1]+workzone[0][3][1])/2]
 
+#Funcion que calcula el angulo de giro para la pinza del brazo robotico (o el
+#giro de los cubos sobre su propio eje).
 def calculate_arm_angle():
   cont=0
   for centro in new_centres:
@@ -119,8 +140,11 @@ def calculate_arm_angle():
     if centro[0] < 0:
       alpha = -degrees(atan(b/c))
     print "El cubo numero",cont+1,"esta a una inclinacion de",alpha,"grados respecto al eje de referencia"
+    arm_angles.append(alpha)
     cont+=1
 
+#Funcion que calcula el angulo de giro para el brazo robotico (giro respecto al
+#eje del nuevo SR).
 def calculate_hand_angle():
   cont = 0
   for cubo in new_sides_angles:
@@ -131,9 +155,14 @@ def calculate_hand_angle():
     if cubo[0][0] < cubo[1][0] and cubo[0][1] > cubo[1][1]:
       alpha = -degrees(atan(b/c))
     print "El cubo numero",cont+1,"tiene un giro sobre si mismo de",alpha,"grados"
+    hand_angles.append(alpha)
     cont+=1
 
+#Funcion que obtiene nuevas coordenadas para los centros de los cubos y los lados
+#de los cubos que serviran para determinar el giro de la pinza del brazo robotico.
 def change_SR():
+  #Se modifican las coordenadas respecto al nuevo SR:
+  #El punto medio del lado inferior del rectangulo de referencia.
   global new_centres
   global new_sides_angles
   #Me quedo con el lado importante para el calculo de angulos de giro.
@@ -142,6 +171,7 @@ def change_SR():
     a = [cubo[0][0]-bottomside_center_worzone[0],bottomside_center_worzone[1]-cubo[0][1]]
     b = [cubo[1][0]-bottomside_center_worzone[0],bottomside_center_worzone[1]-cubo[1][1]]
     new_sides_angles.append([a,b])
+  #Ahora cambio las coordenadas de los centros respecto al nuevo SR.
   for centro in centers:
     a = [centro[0]-bottomside_center_worzone[0],bottomside_center_worzone[1]-centro[1]]
     new_centres.append(a)
@@ -156,6 +186,7 @@ if __name__ == '__main__':
   cv2.drawContours(img, squares, -1, RED, 3)
   cv2.line(img, (topside_center_workzone[0],topside_center_workzone[1]), (bottomside_center_worzone[0],bottomside_center_worzone[1]), BLUE, 1)
   print "El nuevo origen de coordenadas sera [",bottomside_center_worzone[0]/3.78,",",bottomside_center_worzone[1]/3.78,"] mm"
+  print "Utilizando ese punto como nuevo SR."
   for i in centers:
     cv2.line(img, (bottomside_center_worzone[0],bottomside_center_worzone[1]), (i[0],i[1]), ORANGE, 1)
     cv2.line(img, (i[0],bottomside_center_worzone[1]), (i[0],i[1]), CYAN, 1)
