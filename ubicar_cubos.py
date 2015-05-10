@@ -1,9 +1,10 @@
 import numpy as np
 import cv2
-from math import atan, degrees , sqrt, pow
+from math import atan, degrees , sqrt, pow, atan2, degrees, pi
 
 ##########Variables globales#################
-squares = [] #Cuadrados encontrados, respecto a (0,0) de img.
+squares = [] #Cubos encontrados, respecto a (0,0) de img.
+cubos_sorted = [] #Cubos con vertices ordenados a menor Y (para angulos).
 centers = []
 workzone = []
 newsquares = [] #Cuadrados calculados, respecto a (0,0) del nuevo SR.
@@ -24,6 +25,7 @@ def angle_cos(p0, p1, p2):
 
 def find_squares(img):
   img = cv2.GaussianBlur(img, (5, 5), 0)
+  global cubos_sorted
   global squares
   global centers
   previous = []
@@ -55,8 +57,14 @@ def find_squares(img):
             previous.append(cnt[1])
             previous.append(cnt[2])
             previous.append(cnt[3])
+            #Creo cubos ordenados, para luego.
+            cubo = np.copy(cnt)
+            dt = [('col1', cubo.dtype),('col2', cubo.dtype)]
+            aux = cubo.ravel().view(dt)
+            aux.sort(order=['col2','col1'])
+            cubos_sorted.append(cubo)
+
             center = [(cnt[0][0]+cnt[2][0])/2,(cnt[0][1]+cnt[2][1])/2]
-            #alpha = degrees(atan((cnt[1][1]-cnt[0][1])/(cnt[1][0]-cnt[0][0])))
             centers.append([(cnt[0][0]+cnt[2][0])/2,(cnt[0][1]+cnt[2][1])/2])
             imggray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
             sideColor = imggray[center[1]][center[0]] # Color de cara superior
@@ -98,22 +106,29 @@ def find_workzone(img):
             global centro_ladoinf_workzone
             centro_ladoinf_workzone = [(workzone[0][2][0]+workzone[0][3][0])/2,(workzone[0][2][1]+workzone[0][3][1])/2]
 
+def calculate_angle():
+  cont = 0
+  for cubo in cubos_sorted:
+    x = [cubo[0][0],cubo[1][1]]
+    b = sqrt(pow((x[0]-cubo[0][0]),2)+pow((x[1]-cubo[0][1]),2))
+    c = sqrt(pow((x[0]-cubo[1][0]),2)+pow((x[1]-cubo[1][1]),2))
+    alpha = degrees(atan(b/c))
+    if cubo[0][0] < cubo[1][0] and cubo[0][1] < cubo[1][1]:
+      alpha = -degrees(atan(b/c))
+    print "El cubo numero",cont+1,"tiene un giro sobre si mismo de",alpha,"grados"
+    cont+=1
+
 def change_SR():
-  for square in squares:
-    p1 = square[0]
-    p2 = square[1]
-    p3 = square[2]
-    p4 = square[3]
-    print p1
-    print p2
-    print p3
-    print p4
-    xList = [p[0] for p in square]
-    yList = [p[1] for p in square]
-    print xList
-    r=[xList[0]/yList[0],xList[1]/yList[1],xList[2]/yList[2],xList[3]/yList[3]]
-    print r
-    print map(min, [r])
+  new_centres = []
+  new_sides_angles = []
+  #Me quedo con el lado importante para el calculo de angulos de giro.
+  #El resto lo ignoro.
+  for cubo in cubos_sorted:
+    a = [cubo[0][0]-centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]-cubo[0][1]]
+    b = [cubo[1][0]-centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]-cubo[1][1]]
+    new_sides_angles.append([a,b])
+  print new_sides_angles
+
 
 if __name__ == '__main__':
 #  cam = cv2.VideoCapture(0)
@@ -128,6 +143,12 @@ if __name__ == '__main__':
   for i in centers:
     cv2.line(img, (centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]), (i[0],i[1]), NARANJA, 1)
   change_SR()
+  calculate_angle()
+
+  cv2.line(img, (cubos_sorted[0][0][0],cubos_sorted[0][0][1]), (cubos_sorted[0][1][0],cubos_sorted[0][1][1]), AMARILLO, 1)
+  cv2.line(img, (cubos_sorted[1][0][0],cubos_sorted[1][0][1]), (cubos_sorted[1][1][0],cubos_sorted[1][1][1]), AMARILLO, 1)
+  cv2.line(img, (cubos_sorted[2][0][0],cubos_sorted[2][0][1]), (cubos_sorted[2][1][0],cubos_sorted[2][1][1]), AMARILLO, 1)
+
   cv2.imshow('Cube detection', img)
   ch = 0xFF & cv2.waitKey()
   cv2.destroyAllWindows()
