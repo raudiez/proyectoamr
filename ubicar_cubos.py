@@ -1,25 +1,26 @@
 import numpy as np
 import cv2
-from math import atan, degrees , sqrt, pow, atan2, degrees, pi
+from math import atan, degrees , sqrt, pow
 
 ##########Variables globales#################
 squares = [] #Cubos encontrados, respecto a (0,0) de img.
-cubos_sorted = [] #Cubos con vertices ordenados a menor Y (para angulos).
+sorted_cubes = [] #Cubos con vertices ordenados a menor Y (para angulos).
 new_sides_angles = []
 new_centres = []
 centers = []
 workzone = []
 newsquares = [] #Cuadrados calculados, respecto a (0,0) del nuevo SR.
-centro_ladosup_workzone = [0,0]
-centro_ladoinf_workzone = [0,0]
+topside_center_workzone = [0,0]
+bottomside_center_worzone = [0,0]
 #Colores para pintar:
-ROJO=(0,0,255)
-AZUL=(255,0,0)
-VERDE=(0,255,0)
-AMARILLO=(0,255,255)
-NARANJA=(0,150,255)
-BLANCO=(255,255,255)
-NEGRO=(0,0,0)
+RED=(0,0,255)
+BLUE=(255,0,0)
+CYAN=(255,150,0)
+GREEN=(0,255,0)
+YELLOW=(0,255,255)
+ORANGE=(0,150,255)
+WHITE=(255,255,255)
+BLACK=(0,0,0)
 
 def angle_cos(p0, p1, p2):
   d1, d2 = (p0-p1).astype('float'), (p2-p1).astype('float')
@@ -27,7 +28,7 @@ def angle_cos(p0, p1, p2):
 
 def find_squares(img):
   img = cv2.GaussianBlur(img, (5, 5), 0)
-  global cubos_sorted
+  global sorted_cubes
   global squares
   global centers
   previous = []
@@ -64,7 +65,7 @@ def find_squares(img):
             dt = [('col1', cubo.dtype),('col2', cubo.dtype)]
             aux = cubo.ravel().view(dt)
             aux.sort(order=['col2','col1'])
-            cubos_sorted.append(cubo)
+            sorted_cubes.append(cubo)
 
             center = [(cnt[0][0]+cnt[2][0])/2,(cnt[0][1]+cnt[2][1])/2]
             centers.append([(cnt[0][0]+cnt[2][0])/2,(cnt[0][1]+cnt[2][1])/2])
@@ -103,12 +104,24 @@ def find_workzone(img):
           if max_cos < 0.1 and not encontrado:
             workzone.append(cnt)
             previous.append(cnt[0])
-            global centro_ladosup_workzone
-            centro_ladosup_workzone = [(workzone[0][0][0]+workzone[0][1][0])/2,(workzone[0][0][1]+workzone[0][1][1])/2]
-            global centro_ladoinf_workzone
-            centro_ladoinf_workzone = [(workzone[0][2][0]+workzone[0][3][0])/2,(workzone[0][2][1]+workzone[0][3][1])/2]
+            global topside_center_workzone
+            topside_center_workzone = [(workzone[0][0][0]+workzone[0][1][0])/2,(workzone[0][0][1]+workzone[0][1][1])/2]
+            global bottomside_center_worzone
+            bottomside_center_worzone = [(workzone[0][2][0]+workzone[0][3][0])/2,(workzone[0][2][1]+workzone[0][3][1])/2]
 
-def calculate_angle():
+def calculate_arm_angle():
+  cont=0
+  for centro in new_centres:
+    x = [centro[0],0]
+    b = sqrt(pow((x[0]-centro[0]),2)+pow((x[1]-centro[1]),2))
+    c = sqrt(pow((x[0]-0),2)+pow((x[1]-0),2))
+    alpha = degrees(atan(b/c))
+    if centro[0] < 0:
+      alpha = -degrees(atan(b/c))
+    print "El cubo numero",cont+1,"esta a una inclinacion de",alpha,"grados respecto al eje de referencia"
+    cont+=1
+
+def calculate_hand_angle():
   cont = 0
   for cubo in new_sides_angles:
     x = [cubo[0][0],cubo[1][1]]
@@ -125,34 +138,34 @@ def change_SR():
   global new_sides_angles
   #Me quedo con el lado importante para el calculo de angulos de giro.
   #El resto lo ignoro.
-  for cubo in cubos_sorted:
-    a = [cubo[0][0]-centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]-cubo[0][1]]
-    b = [cubo[1][0]-centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]-cubo[1][1]]
+  for cubo in sorted_cubes:
+    a = [cubo[0][0]-bottomside_center_worzone[0],bottomside_center_worzone[1]-cubo[0][1]]
+    b = [cubo[1][0]-bottomside_center_worzone[0],bottomside_center_worzone[1]-cubo[1][1]]
     new_sides_angles.append([a,b])
   for centro in centers:
-    a = [centro[0]-centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]-centro[1]]
-    b = [centro[0]-centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]-centro[1]]
-    new_centres.append([a,b])
+    a = [centro[0]-bottomside_center_worzone[0],bottomside_center_worzone[1]-centro[1]]
+    new_centres.append(a)
 
 if __name__ == '__main__':
 #  cam = cv2.VideoCapture(0)
 #  ret, img = cam.read()
-  img = cv2.imread('cubos4.png')
+  img = cv2.imread('cubos5.png')
   find_workzone(img)
-  cv2.drawContours(img, workzone, -1, VERDE, 2)
+  cv2.drawContours(img, workzone, -1, GREEN, 2)
   find_squares(img)
-  cv2.drawContours(img, squares, -1, ROJO, 3)
-  cv2.line(img, (centro_ladosup_workzone[0],centro_ladosup_workzone[1]), (centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]), AZUL, 1)
-  print "El nuevo origen de coordenadas sera [",centro_ladoinf_workzone[0]/3.78,",",centro_ladoinf_workzone[1]/3.78,"] mm"
+  cv2.drawContours(img, squares, -1, RED, 3)
+  cv2.line(img, (topside_center_workzone[0],topside_center_workzone[1]), (bottomside_center_worzone[0],bottomside_center_worzone[1]), BLUE, 1)
+  print "El nuevo origen de coordenadas sera [",bottomside_center_worzone[0]/3.78,",",bottomside_center_worzone[1]/3.78,"] mm"
   for i in centers:
-    cv2.line(img, (centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]), (i[0],i[1]), NARANJA, 1)
+    cv2.line(img, (bottomside_center_worzone[0],bottomside_center_worzone[1]), (i[0],i[1]), ORANGE, 1)
+    cv2.line(img, (i[0],bottomside_center_worzone[1]), (i[0],i[1]), CYAN, 1)
   change_SR()
+  calculate_arm_angle()
+  calculate_hand_angle()
 
-  calculate_angle()
-
-  cv2.line(img, (cubos_sorted[0][0][0],cubos_sorted[0][0][1]), (cubos_sorted[0][1][0],cubos_sorted[0][1][1]), AMARILLO, 1)
-  cv2.line(img, (cubos_sorted[1][0][0],cubos_sorted[1][0][1]), (cubos_sorted[1][1][0],cubos_sorted[1][1][1]), AMARILLO, 1)
-  cv2.line(img, (cubos_sorted[2][0][0],cubos_sorted[2][0][1]), (cubos_sorted[2][1][0],cubos_sorted[2][1][1]), AMARILLO, 1)
+  cv2.line(img, (sorted_cubes[0][0][0],sorted_cubes[0][0][1]), (sorted_cubes[0][1][0],sorted_cubes[0][1][1]), YELLOW, 1)
+  cv2.line(img, (sorted_cubes[1][0][0],sorted_cubes[1][0][1]), (sorted_cubes[1][1][0],sorted_cubes[1][1][1]), YELLOW, 1)
+  cv2.line(img, (sorted_cubes[2][0][0],sorted_cubes[2][0][1]), (sorted_cubes[2][1][0],sorted_cubes[2][1][1]), YELLOW, 1)
 
   cv2.imshow('Cube detection', img)
   ch = 0xFF & cv2.waitKey()
