@@ -5,6 +5,8 @@ from math import atan, degrees , sqrt, pow, atan2, degrees, pi
 ##########Variables globales#################
 squares = [] #Cubos encontrados, respecto a (0,0) de img.
 cubos_sorted = [] #Cubos con vertices ordenados a menor Y (para angulos).
+new_sides_angles = []
+new_centres = []
 centers = []
 workzone = []
 newsquares = [] #Cuadrados calculados, respecto a (0,0) del nuevo SR.
@@ -108,27 +110,29 @@ def find_workzone(img):
 
 def calculate_angle():
   cont = 0
-  for cubo in cubos_sorted:
+  for cubo in new_sides_angles:
     x = [cubo[0][0],cubo[1][1]]
     b = sqrt(pow((x[0]-cubo[0][0]),2)+pow((x[1]-cubo[0][1]),2))
     c = sqrt(pow((x[0]-cubo[1][0]),2)+pow((x[1]-cubo[1][1]),2))
     alpha = degrees(atan(b/c))
-    if cubo[0][0] < cubo[1][0] and cubo[0][1] < cubo[1][1]:
+    if cubo[0][0] < cubo[1][0] and cubo[0][1] > cubo[1][1]:
       alpha = -degrees(atan(b/c))
     print "El cubo numero",cont+1,"tiene un giro sobre si mismo de",alpha,"grados"
     cont+=1
 
 def change_SR():
-  new_centres = []
-  new_sides_angles = []
+  global new_centres
+  global new_sides_angles
   #Me quedo con el lado importante para el calculo de angulos de giro.
   #El resto lo ignoro.
   for cubo in cubos_sorted:
     a = [cubo[0][0]-centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]-cubo[0][1]]
     b = [cubo[1][0]-centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]-cubo[1][1]]
     new_sides_angles.append([a,b])
-  print new_sides_angles
-
+  for centro in centers:
+    a = [centro[0]-centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]-centro[1]]
+    b = [centro[0]-centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]-centro[1]]
+    new_centres.append([a,b])
 
 if __name__ == '__main__':
 #  cam = cv2.VideoCapture(0)
@@ -143,6 +147,7 @@ if __name__ == '__main__':
   for i in centers:
     cv2.line(img, (centro_ladoinf_workzone[0],centro_ladoinf_workzone[1]), (i[0],i[1]), NARANJA, 1)
   change_SR()
+
   calculate_angle()
 
   cv2.line(img, (cubos_sorted[0][0][0],cubos_sorted[0][0][1]), (cubos_sorted[0][1][0],cubos_sorted[0][1][1]), AMARILLO, 1)
