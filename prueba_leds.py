@@ -17,9 +17,9 @@ parser.add_argument('color', metavar='color', type=str, nargs=1,
 args = parser.parse_args()
 
 # LED pin mapping.
-red = {{ leds_pin_red }}
-green = {{ leds_pin_green }}
-blue = {{ leds_pin_blue }}
+red = 18
+green = 27
+blue = 17
 
 # GPIO Setup.
 GPIO.setmode(GPIO.BCM)
