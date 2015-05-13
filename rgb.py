@@ -12,9 +12,9 @@ import time
 import RPi.GPIO as GPIO
 
 # Get RGB colors from command line arguments.
-parser = argparse.ArgumentParser(description = 'Add a little color to your life.')
-parser.add_argument('color', metavar='color', type=str, nargs=1,
-                   help='A color value of red, green, blue, or off.')
+parser = argparse.ArgumentParser(description = 'Light up the world!')
+parser.add_argument('rgb', metavar='0-255', type=int, nargs=3,
+                   help='Red, Green, and Blue color values (0-255).')
 args = parser.parse_args()
 
 # LED pin mapping.
