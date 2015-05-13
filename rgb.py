@@ -8,6 +8,7 @@
 # @author Jeff Geerling, 2015
 
 import argparse
+import time
 import RPi.GPIO as GPIO
 
 # Get RGB colors from command line arguments.
