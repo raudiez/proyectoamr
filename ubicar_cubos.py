@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 #### TO DO: -distancia desde el nuevo SR hasta el centro de los cubos.
 ####        -reconocer unicamente 1 cubo cada vez, para la version final.
 
@@ -32,7 +35,7 @@ def angle_cos(p0, p1, p2):
   return abs( np.dot(d1, d2) / np.sqrt( np.dot(d1, d1)*np.dot(d2, d2) ) )
 
 
-#Funcion que encuentra los cuadrados de las caras superiores de cada cubo,
+#Función que encuentra los cuadrados de las caras superiores de cada cubo,
 #obtiene los cuadrados del contorno, y los centros.
 def find_squares(img):
   img = cv2.GaussianBlur(img, (5, 5), 0)
@@ -54,7 +57,7 @@ def find_squares(img):
       for cnt in contours:
         cnt_len = cv2.arcLength(cnt, True)
         cnt = cv2.approxPolyDP(cnt, 0.02*cnt_len, True)
-        if len(cnt) == 4 and cv2.contourArea(cnt) > 1200 and cv2.contourArea(cnt) < 3500 and cv2.isContourConvex(cnt):
+        if len(cnt) == 4 and cv2.contourArea(cnt) > 1200 and cv2.contourArea(cnt) < 4000 and cv2.isContourConvex(cnt):
           cnt = cnt.reshape(-1, 2)
           encontrado = False
           #Se hace un bucle para buscar dentro de los contornos los más próximos
@@ -112,7 +115,7 @@ def find_workzone(img):
       for cnt in contours:
         cnt_len = cv2.arcLength(cnt, True)
         cnt = cv2.approxPolyDP(cnt, 0.02*cnt_len, True)
-        if len(cnt) == 4 and cv2.contourArea(cnt) > 40000 and cv2.contourArea(cnt) < 110000 and cv2.isContourConvex(cnt):
+        if len(cnt) == 4 and cv2.contourArea(cnt) > 40000 and cv2.contourArea(cnt) < 150000 and cv2.isContourConvex(cnt):
           cnt = cnt.reshape(-1, 2)
           encontrado = False
           for i in previous:
@@ -123,12 +126,31 @@ def find_workzone(img):
           if max_cos < 0.1 and not encontrado:
             workzone.append(cnt)
             previous.append(cnt[0])
-            global topside_center_workzone
-            topside_center_workzone = [(workzone[0][0][0]+workzone[0][1][0])/2,(workzone[0][0][1]+workzone[0][1][1])/2]
-            global bottomside_center_worzone
-            bottomside_center_worzone = [(workzone[0][2][0]+workzone[0][3][0])/2,(workzone[0][2][1]+workzone[0][3][1])/2]
+            calculate_workzone()
 
-#Funcion que calcula el angulo de giro para la pinza del brazo robotico (o el
+#Función que ordena los puntos del rectángulo de referencia y obtiene el
+#lado superior y el inferior.
+def calculate_workzone():
+  top = [0,0]
+  bottom = [0,0]
+  topi=bottomi=i=0
+  while i < 4:
+    #Se compara respecto a la mitad de la imagen (240 px).
+    if workzone[0][i][1] < 240:
+      top[topi]=[workzone[0][i][0],workzone[0][i][1]]
+      topi+=1
+    else:
+      bottom[bottomi]=[workzone[0][i][0],workzone[0][i][1]]
+      bottomi+=1
+    i+=1
+  top.sort
+  bottom.sort
+  global topside_center_workzone
+  topside_center_workzone = [(top[0][0]+top[1][0])/2,(top[0][1]+top[1][1])/2]
+  global bottomside_center_worzone
+  bottomside_center_worzone = [(bottom[0][0]+bottom[1][0])/2,(bottom[0][1]+bottom[1][1])/2]
+
+#Función que calcula el angulo de giro para la pinza del brazo robotico (o el
 #giro de los cubos sobre su propio eje).
 def calculate_arm_angle():
   cont=0
@@ -143,7 +165,7 @@ def calculate_arm_angle():
     arm_angles.append(alpha)
     cont+=1
 
-#Funcion que calcula el angulo de giro para el brazo robotico (giro respecto al
+#Función que calcula el angulo de giro para el brazo robotico (giro respecto al
 #eje del nuevo SR).
 def calculate_hand_angle():
   cont = 0
@@ -158,7 +180,7 @@ def calculate_hand_angle():
     hand_angles.append(alpha)
     cont+=1
 
-#Funcion que obtiene nuevas coordenadas para los centros de los cubos y los lados
+#Función que obtiene nuevas coordenadas para los centros de los cubos y los lados
 #de los cubos que serviran para determinar el giro de la pinza del brazo robotico.
 def change_SR():
   #Se modifican las coordenadas respecto al nuevo SR:
@@ -179,7 +201,7 @@ def change_SR():
 if __name__ == '__main__':
 #  cam = cv2.VideoCapture(0)
 #  ret, img = cam.read()
-  img = cv2.imread('cubos5.png')
+  img = cv2.imread('cubos6.png')
   find_workzone(img)
   cv2.drawContours(img, workzone, -1, GREEN, 2)
   find_squares(img)
