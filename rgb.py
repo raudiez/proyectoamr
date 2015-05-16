@@ -18,9 +18,9 @@ parser.add_argument('rgb', metavar='0-255', type=int, nargs=3,
 args = parser.parse_args()
 
 # LED pin mapping.
-red = 18
-green = 27
-blue = 17
+blue = 18
+green = 21 #Pin 21 en Raspi B. Pin 27 en B+.
+red = 17
 
 # GPIO Setup.
 GPIO.setmode(GPIO.BCM)
@@ -34,9 +34,9 @@ GPIO.setup(blue, GPIO.OUT)
 RED = GPIO.PWM(red, 100)
 GREEN = GPIO.PWM(green, 100)
 BLUE = GPIO.PWM(blue, 100)
-RED.start(0)
-GREEN.start(0)
-BLUE.start(0)
+RED.start(100)
+GREEN.start(100)
+BLUE.start(100)
 
 # Set a color by giving R, G, and B values of 0-255.
 def setColor(rgb = []):
@@ -47,6 +47,6 @@ def setColor(rgb = []):
     BLUE.ChangeDutyCycle(rgb[2])
 
 setColor(args.rgb)
-time.sleep(10)
+time.sleep(5)
 
 GPIO.cleanup()
