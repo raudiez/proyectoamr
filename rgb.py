@@ -48,6 +48,7 @@ def setColor(rgb = []):
 
 try:
 	setColor(args.rgb)
+	time.sleep(5)
 except (KeyboardInterrupt, SystemExit):
 	raise
 
