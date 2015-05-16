@@ -46,7 +46,9 @@ def setColor(rgb = []):
     GREEN.ChangeDutyCycle(rgb[1])
     BLUE.ChangeDutyCycle(rgb[2])
 
-setColor(args.rgb)
-time.sleep(5)
+try:
+	setColor(args.rgb)
+except (KeyboardInterrupt, SystemExit):
+	raise
 
 GPIO.cleanup()
