@@ -41,7 +41,7 @@ BLUE.start(100)
 # Set a color by giving R, G, and B values of 0-255.
 def setColor(rgb = []):
     # Convert 0-255 range to 0-100.
-    rgb = [(x / 255.0) * 100 for x in rgb]
+    rgb = [(abs(x-255) / 255.0) * 100 for x in rgb]
     RED.ChangeDutyCycle(rgb[0])
     GREEN.ChangeDutyCycle(rgb[1])
     BLUE.ChangeDutyCycle(rgb[2])
