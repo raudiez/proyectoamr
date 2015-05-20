@@ -201,7 +201,7 @@ def change_SR():
 if __name__ == '__main__':
 #  cam = cv2.VideoCapture(0)
 #  ret, img = cam.read()
-  img = cv2.imread('cubos1.png')
+  img = cv2.imread('3cubos.png')
   find_workzone(img)
   cv2.drawContours(img, workzone, -1, GREEN, 2)
   find_squares(img)
