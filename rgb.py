@@ -19,7 +19,7 @@ args = parser.parse_args()
 
 # LED pin mapping.
 blue = 18
-green = 21 #Pin 21 en Raspi B. Pin 27 en B+.
+green = 27 #Pin 21 en Raspi B. Pin 27 en B+.
 red = 17
 
 # GPIO Setup.
