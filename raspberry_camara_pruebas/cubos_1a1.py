@@ -231,11 +231,15 @@ def captureAndFind():
   find_squares(img)
   cv2.drawContours(img, squares, -1, RED, 3)
   cv2.line(img, (topside_center_workzone[0],topside_center_workzone[1]), (bottomside_center_worzone[0],bottomside_center_worzone[1]), BLUE, 1)
+
+  # Supuestamente, esto debería ser lo mismo que lo de abajo:
   #for i in centers:
   #  cv2.line(img, (bottomside_center_worzone[0],bottomside_center_worzone[1]), (i[0],i[1]), ORANGE, 1)
   #  cv2.line(img, (i[0],bottomside_center_worzone[1]), (i[0],i[1]), CYAN, 1)
+
   cv2.line(img, (bottomside_center_worzone[0],bottomside_center_worzone[1]), (centers[0][0],centers[0][1]), ORANGE, 1)
   cv2.line(img, (centers[0][0],bottomside_center_worzone[1]), (centers[0][0],centers[0][1]), CYAN, 1)
+
   change_SR()
   getArmAngle()
   getHandAngle()
