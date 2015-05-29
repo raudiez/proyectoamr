@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#### TO DO: -Distancia desde el nuevo SR hasta el centro de los cubos.
+#### TO DO: - Distancia desde el nuevo SR hasta el centro de los cubos.
 
 import numpy as np
 import cv2
 from math import atan, degrees , sqrt, pow
 
-##########Variables globales#################
-squares = [] #Cubos encontrados, respecto a (0,0) de img.
-sorted_cubes = [] #Cubos con vértices ordenados por menor Y (para getXAngle).
+########## Variables globales #################
+squares = [] # Cubos encontrados, respecto a (0,0) de img.
+sorted_cubes = [] # Cubos con vértices ordenados por menor Y (para getXAngle).
 cont = 0
 new_sides_angles = []
 new_centres = []
@@ -17,11 +17,11 @@ arm_angles = []
 hand_angles = []
 centers = []
 workzone = []
-newsquares = [] #Cuadrados calculados, respecto a (0,0) del nuevo SR.
+newsquares = [] # Cuadrados calculados, respecto a (0,0) del nuevo SR.
 topside_center_workzone = [0,0]
 bottomside_center_worzone = [0,0]
 
-#Colores para pintar:
+# Colores para pintar:
 RED=(0,0,255)
 BLUE=(255,0,0)
 CYAN=(255,150,0)
@@ -31,15 +31,14 @@ ORANGE=(0,150,255)
 WHITE=(255,255,255)
 BLACK=(0,0,0)
 
-########Definición de funciones##################
+######## Definición de funciones ##################
 
 def angle_cos(p0, p1, p2):
   d1, d2 = (p0-p1).astype('float'), (p2-p1).astype('float')
   return abs( np.dot(d1, d2) / np.sqrt( np.dot(d1, d1)*np.dot(d2, d2) ) )
 
-
-#Función que encuentra los cuadrados de las caras superiores de cada cubo,
-#obtiene los cuadrados del contorno, y los centros.
+# Función que encuentra los cuadrados de las caras superiores de cada cubo,
+# obtiene los cuadrados del contorno, y los centros.
 def find_squares(img):
   img = cv2.GaussianBlur(img, (5, 5), 0)
   global sorted_cubes
@@ -104,11 +103,10 @@ def find_squares(img):
                   cont+=1
                   cuboFound = True
 
-
-#Se encuentra un rectángulo de area mayor que los cubos, que los contiene y
-#vale de referencia para ubicación. Hace prácticamente lo mismo que la función
-#anterior para los cubos. Obtiene además puntos de referencia a mitad del
-#rectángulo de referencia para construir un eje de coordenadas.
+# Se encuentra un rectángulo de area mayor que los cubos, que los contiene y
+# vale de referencia para ubicación. Hace prácticamente lo mismo que la función
+# anterior para los cubos. Obtiene además puntos de referencia a mitad del
+# rectángulo de referencia para construir un eje de coordenadas.
 def find_workzone(img):
   img = cv2.GaussianBlur(img, (5, 5), 0)
   global workzone
@@ -137,8 +135,8 @@ def find_workzone(img):
             previous.append(cnt[0])
             getReference()
 
-#Función que ordena los puntos del rectángulo de referencia y obtiene el
-#lado superior y el inferior.
+# Función que ordena los puntos del rectángulo de referencia y obtiene el
+# lado superior y el inferior.
 def getReference():
   top = [0,0]
   bottom = [0,0]
@@ -159,8 +157,8 @@ def getReference():
   global bottomside_center_worzone
   bottomside_center_worzone = [(bottom[0][0]+bottom[1][0])/2,(bottom[0][1]+bottom[1][1])/2]
 
-#Función que obtiene nuevas coordenadas para los centros de los cubos y los lados
-#de los cubos que serviran para determinar el giro de la pinza del brazo robótico.
+# Función que obtiene nuevas coordenadas para los centros de los cubos y los lados
+# de los cubos que serviran para determinar el giro de la pinza del brazo robótico.
 def change_SR():
   #Se modifican las coordenadas respecto al nuevo SR:
   #El punto medio del lado inferior del rectángulo de referencia.
@@ -177,8 +175,8 @@ def change_SR():
     a = [centro[0]-bottomside_center_worzone[0],bottomside_center_worzone[1]-centro[1]]
     new_centres.append(a)
 
-#Función que calcula el ángulo de giro para la pinza del brazo robótico (o el
-#giro de los cubos sobre su propio eje).
+# Función que calcula el ángulo de giro para la pinza del brazo robótico (o el
+# giro de los cubos sobre su propio eje).
 def getArmAngle():
   global cont
   for centro in new_centres:
@@ -191,8 +189,8 @@ def getArmAngle():
     print "El cubo numero",cont,"esta a una inclinacion de",alpha,"grados respecto al eje de referencia"
     arm_angles.append(alpha)
 
-#Función que calcula el ángulo de giro para el brazo robótico (giro respecto al
-#eje del nuevo SR).
+# Función que calcula el ángulo de giro para el brazo robótico (giro respecto al
+# eje del nuevo SR).
 def getHandAngle():
   global cont
   for cubo in new_sides_angles:
@@ -205,6 +203,8 @@ def getHandAngle():
     print "El cubo numero",cont,"tiene un giro sobre si mismo de",alpha,"grados"
     hand_angles.append(alpha)
 
+# Función que limpia las variables globales que se reutilizan en el
+# programa principal.
 def clean():
   squares = []
   sorted_cubes = []
@@ -215,70 +215,38 @@ def clean():
   centers = []
   newsquares = []
 
+# Función que realiza una captura con la cámara, busca los cubos, e imprime
+# por pantalla información como ángulos, posición, y los pinta en la captura.
+def captureAndFind():
+  global cont
+  cam = cv2.VideoCapture(0)
+  ret, img = cam.read()
+  # Si es la primera vez que se ejecuta la función, se busca la zona de trabajo,
+  # que serviará como referencia.
+  if cont == 0 :
+    find_workzone(img)
+    print "El nuevo origen de coordenadas sera [",bottomside_center_worzone[0]/3.78,",",bottomside_center_worzone[1]/3.78,"] mm"
+    print "Utilizando ese punto como nuevo SR."
+  cv2.drawContours(img, workzone, -1, GREEN, 2)
+  find_squares(img)
+  cv2.drawContours(img, squares, -1, RED, 3)
+  cv2.line(img, (topside_center_workzone[0],topside_center_workzone[1]), (bottomside_center_worzone[0],bottomside_center_worzone[1]), BLUE, 1)
+  #for i in centers:
+  #  cv2.line(img, (bottomside_center_worzone[0],bottomside_center_worzone[1]), (i[0],i[1]), ORANGE, 1)
+  #  cv2.line(img, (i[0],bottomside_center_worzone[1]), (i[0],i[1]), CYAN, 1)
+  cv2.line(img, (bottomside_center_worzone[0],bottomside_center_worzone[1]), (centers[0][0],centers[0][1]), ORANGE, 1)
+  cv2.line(img, (centers[0][0],bottomside_center_worzone[1]), (centers[0][0],centers[0][1]), CYAN, 1)
+  change_SR()
+  getArmAngle()
+  getHandAngle()
+  cv2.line(img, (sorted_cubes[0][0][0],sorted_cubes[0][0][1]), (sorted_cubes[0][1][0],sorted_cubes[0][1][1]), YELLOW, 1)
+  cv2.imshow('Cube detection', img)
+  ch = 0xFF & cv2.waitKey()
+  cv2.destroyAllWindows()
+  clean()
+  cam.release()
+
 if __name__ == '__main__':
-
-  #BUSCAR PRIMER CUBO (1)
-
-  cam = cv2.VideoCapture(0)
-  ret, img = cam.read()
-  find_workzone(img)
-  cv2.drawContours(img, workzone, -1, GREEN, 2)
-  find_squares(img)
-  cv2.drawContours(img, squares, -1, RED, 3)
-  cv2.line(img, (topside_center_workzone[0],topside_center_workzone[1]), (bottomside_center_worzone[0],bottomside_center_worzone[1]), BLUE, 1)
-  for i in centers:
-    cv2.line(img, (bottomside_center_worzone[0],bottomside_center_worzone[1]), (i[0],i[1]), ORANGE, 1)
-    cv2.line(img, (i[0],bottomside_center_worzone[1]), (i[0],i[1]), CYAN, 1)
-  change_SR()
-  getArmAngle()
-  getHandAngle()
-  cv2.line(img, (sorted_cubes[0][0][0],sorted_cubes[0][0][1]), (sorted_cubes[0][1][0],sorted_cubes[0][1][1]), YELLOW, 1)
-  cv2.imshow('Cube detection', img)
-  ch = 0xFF & cv2.waitKey()
-  cv2.destroyAllWindows()
-
-  clean()
-  cam.release()
-  print "El nuevo origen de coordenadas sera [",bottomside_center_worzone[0]/3.78,",",bottomside_center_worzone[1]/3.78,"] mm"
-  print "Utilizando ese punto como nuevo SR."
-
-  #BUSCAR SEGUNDO CUBO (2)
-
-  cam = cv2.VideoCapture(0)
-  ret, img = cam.read()
-  cv2.drawContours(img, workzone, -1, GREEN, 2)
-  find_squares(img)
-  cv2.drawContours(img, squares, -1, RED, 3)
-  cv2.line(img, (topside_center_workzone[0],topside_center_workzone[1]), (bottomside_center_worzone[0],bottomside_center_worzone[1]), BLUE, 1)
-  for i in centers:
-    cv2.line(img, (bottomside_center_worzone[0],bottomside_center_worzone[1]), (i[0],i[1]), ORANGE, 1)
-    cv2.line(img, (i[0],bottomside_center_worzone[1]), (i[0],i[1]), CYAN, 1)
-  change_SR()
-  getArmAngle()
-  getHandAngle()
-  cv2.line(img, (sorted_cubes[0][0][0],sorted_cubes[0][0][1]), (sorted_cubes[0][1][0],sorted_cubes[0][1][1]), YELLOW, 1)
-  cv2.imshow('Cube detection', img)
-  ch = 0xFF & cv2.waitKey()
-  cv2.destroyAllWindows()
-
-  clean()
-  cam.release()
-
-  #BUSCAR TERCER CUBO (3)
-
-  cam = cv2.VideoCapture(0)
-  ret, img = cam.read()
-  cv2.drawContours(img, workzone, -1, GREEN, 2)
-  find_squares(img)
-  cv2.drawContours(img, squares, -1, RED, 3)
-  cv2.line(img, (topside_center_workzone[0],topside_center_workzone[1]), (bottomside_center_worzone[0],bottomside_center_worzone[1]), BLUE, 1)
-  for i in centers:
-    cv2.line(img, (bottomside_center_worzone[0],bottomside_center_worzone[1]), (i[0],i[1]), ORANGE, 1)
-    cv2.line(img, (i[0],bottomside_center_worzone[1]), (i[0],i[1]), CYAN, 1)
-  change_SR()
-  getArmAngle()
-  getHandAngle()
-  cv2.line(img, (sorted_cubes[0][0][0],sorted_cubes[0][0][1]), (sorted_cubes[0][1][0],sorted_cubes[0][1][1]), YELLOW, 1)
-  cv2.imshow('Cube detection', img)
-  ch = 0xFF & cv2.waitKey()
-  cv2.destroyAllWindows()
+  while cont < 2 : # Se itera mientras cont < 2 (2 = num cubos -1)
+    # Se realiza una captura con la cámara y se busca un cubo.
+    captureAndFind()
