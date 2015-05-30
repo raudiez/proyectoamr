@@ -20,7 +20,7 @@ sideWristAngle = [0,0]
 
 # Variables finales a enviar a Arduino (estas variables se reinicializan para
 # cada nuevo cubo encontrado):
-upperSideColor = 0 # Color de la cara superior.
+upperSideColor = 0 # Valor del color de la cara superior.
 wristAngle = 0 # Ángulo de giro de la muñeca.
 xFromArm = 0 # X respecto al brazo robótico.
 yFromArm = 0 # Y respercto al brazo robótico.
@@ -80,13 +80,13 @@ def findSquares(img):
                 max_cos = np.max([angle_cos( cnt[i], cnt[(i+1) % 4], cnt[(i+2) % 4] ) for i in xrange(4)])
                 if max_cos < 0.1 and not encontrado:
                   # Se almacena el contorno del cuadrado con sus vértices, se almacena
-                  # como analizado tambien.
+                  # como analizado también.
                   square = np.copy(cnt)
                   previous.append(cnt[0])
                   previous.append(cnt[1])
                   previous.append(cnt[2])
                   previous.append(cnt[3])
-                  # Se ordenan los vértices de los cubos, para luego usarlos para
+                  # Se ordenan los vértices del cubo, para luego usarlos para
                   # los ángulos.
                   cubo = np.copy(cnt)
                   dt = [('col1', cubo.dtype),('col2', cubo.dtype)]
@@ -220,7 +220,7 @@ def captureAndFind():
   cv2.drawContours(img, workzone, -1, GREEN, 2)
   findSquares(img)
   getColor(img)
-  cv2.drawContours(img, squares, -1, RED, 3) # Se pinta el cubo.
+  cv2.drawContours(img, square, -1, RED, 3) # Se pinta el cubo.
   # Se pinta el eje de referencia.
   cv2.line(img, (topside_center_workzone[0],topside_center_workzone[1]), (bottomside_center_worzone[0],bottomside_center_worzone[1]), BLUE, 1)
   changeSR()
