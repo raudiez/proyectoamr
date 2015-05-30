@@ -192,6 +192,16 @@ def getColor(img):
     color = "negro"
   print "Su color es",color
 
+# Función que convierte a milímetros un valor en px, según las medidas de
+# la zona de espera de los cubos (medidas utilizadas como referencia).
+def convertPixelsToMillimetres(pixels):
+  # Para convertir de px a mm, se utiliza una regla de 3. Sabiendo que el
+  # rectángulo de la zona de espera mide 130x60mm (ancho x alto), si en la
+  # captura, el alto es de X px, entonces 1mm = X / 60 px.
+  X = bottomside_center_worzone[1] - topside_center_workzone[1]
+  one_mm_in_px = X/60
+  return pixels / one_mm_in_px
+
 # Función que limpia las variables globales que se reutilizan en el
 # programa principal.
 def clean():
@@ -215,7 +225,7 @@ def captureAndFind():
   # que servirá como referencia.
   if cont == 0 :
     findWorkzone(img)
-    print "El nuevo origen de coordenadas sera [",bottomside_center_worzone[0]/3.78,",",bottomside_center_worzone[1]/3.78,"] mm"
+    print "El nuevo origen de coordenadas sera [",convertPixelsToMillimetres(bottomside_center_worzone[0]),",",convertPixelsToMillimetres(bottomside_center_worzone[1]),"] mm"
     print "Utilizando ese punto como nuevo SR."
   cv2.drawContours(img, workzone, -1, GREEN, 2)
   findSquares(img)
