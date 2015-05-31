@@ -25,6 +25,9 @@ wristAngle = 0 # Ángulo de giro de la muñeca.
 xFromArm = 0 # X respecto al brazo robótico.
 yFromArm = 0 # Y respercto al brazo robótico.
 
+# Datos conocidos:
+yDistanceFromArm = 124.8 # Distancia desde el nuevo SR (0,0) al (0,0) del brazo, en mm.
+
 # Colores para pintar:
 RED=(0,0,255)
 BLUE=(255,0,0)
@@ -202,13 +205,23 @@ def convertPixelsToMillimetres(pixels):
   one_mm_in_px = X/60
   return pixels / one_mm_in_px
 
+# Función que obtiene la coordenada X respecto al brazo robótico.
+def getXFromArm():
+  aux = -new_center[0]
+  return convertPixelsToMillimetres(aux)
+
+# Función que obtiene la coordenada Y respecto al brazo robótico.
+def getYFromArm():
+  global yDistanceFromArm
+  return yDistanceFromArm - convertPixelsToMillimetres(new_center[1])
+
 # Función que limpia las variables globales que se reutilizan en el
 # programa principal.
 def clean():
   square = []
   sorted_cube = []
   center = [0,0]
-  new_center = [0,0]
+  new_center = [0,0]pero si el
   sideWristAngle = [0,0]
   upperSideColor = 0
   wristAngle = 0
@@ -219,6 +232,8 @@ def clean():
 # por pantalla información como ángulos, posición, y los pinta en la captura.
 def captureAndFind():
   global cont
+  global xFromArm
+  global yFromArm
   cam = cv2.VideoCapture(0)
   ret, img = cam.read()
   # Si es la primera vez que se ejecuta la función, se busca la zona de trabajo,
@@ -235,6 +250,8 @@ def captureAndFind():
   cv2.line(img, (topside_center_workzone[0],topside_center_workzone[1]), (bottomside_center_worzone[0],bottomside_center_worzone[1]), BLUE, 1)
   changeSR()
   getWristAngle()
+  xFromArm = getXFromArm()
+  yFromArm = getYFromArm()
   # Se pinta el lado con el que se calcula el ángulo de la muñeca.
   cv2.line(img, (sorted_cube[0][0],sorted_cube[0][1]), (sorted_cube[1][0],sorted_cube[1][1]), YELLOW, 1)
   cv2.imshow('Cube detection', img)
