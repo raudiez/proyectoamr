@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#### TO DO: - Calcular X e Y respecto al brazo.
+#### TODO: - Comunicación con Arduino mediante serial.
+####        - Pruebas del programa.
 
 import numpy as np
 import cv2
