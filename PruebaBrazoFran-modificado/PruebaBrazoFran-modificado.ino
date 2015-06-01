@@ -19,16 +19,15 @@ void setup(){
   Serial.begin(9600);
 
   myservo1.attach(7); //servo del soporte giratorio! base
-  mapeo_servo1(0);
-  delay(1000);
   myservo2.attach(8); //hombro
   myservo3.attach(9); //codo...sube o baja el brazo
   myservo4.attach(10); ///muñeca vertical
   myservo5.attach(11); //muñeca horizontal - mano
   myservo6.attach(12); //pinza
 
-  reposo();
+  //reposo();
   delay(1000);
+  //Todo esto es para calibrar la pinza
   myservo6.write(180);
   delay(1000);
   myservo6.write(0);
@@ -48,15 +47,23 @@ void loop(){
   delay(1000);
   abrir_pinza();
   delay(2000);
+  mover_hacia_cubo(-12.8,107.6,-5.0);
+  delay(2000);
 /*
   //va a por el cubo.
   if(x<0){ x-=15.0; y+=5;}
   else if(x > 0){ x+=50.0; z+=10; y-=23;}
   calcula_angulos(x,y+50.0,75.0+z);
   delay(1000);*/
+  
   cerrar_pinza();
   delay(1000);
+  reposo();
 
+  //subir_brazo(10.0,100.0,60.0);
+  //soltar_cubo(120.0,120.0,10.0);
+  //subir_brazo_2(120.0,120.0,60.0);
+/*
   //sube
   x=10.0;
   y=100.0;
@@ -64,8 +71,8 @@ void loop(){
   if(x<0){ x-=15.0; y+=5;}
   else if(x > 0){ x+=50.0; z+=10; y-=23;}
   calcula_angulos(x,y+50.0,75.0+z);
-  delay(2000);
-
+  delay(2000);*/
+/*
   //va a soltar el cubo.
   reposo();
   delay(1000);
@@ -76,8 +83,8 @@ void loop(){
   else if(x > 0){ x+=50.0; z+=10; y-=23;}
   calcula_angulos(x,y+50.0,75.0+z);
   abrir_pinza();
-  delay(2000);
-
+  delay(2000);*/
+/*
   //sube
   x=100.0;
   y=120.0;
@@ -85,27 +92,51 @@ void loop(){
   if(x<0){ x-=15.0; y+=5;}
   else if(x > 0){ x+=50.0; z+=10; y-=23;}
   calcula_angulos(x,y+50.0,75.0+z);
-  delay(2000);
+  delay(2000);*/
 }
 
 
-void mover_plataforma(){
+void mover_hacia_cubo(double x, double y, double z){
 
-  double x=10.0;
-  double y=100.0;
-  double z=10.0;
-  
-  //va a por el cubo.
+  //if(x<0){ x-=15.0; y+=5;}
+  if(x > 0){ x+=50.0; z+=10; y-=23;}
+  calcula_angulos(x,y+50.0,75.0+z);
+  delay(1000);
+
+}
+
+void subir_brazo(double x, double y, double z){
+
   if(x<0){ x-=15.0; y+=5;}
   else if(x > 0){ x+=50.0; z+=10; y-=23;}
   calcula_angulos(x,y+50.0,75.0+z);
+  delay(2000);
   
+}
+
+void soltar_cubo(double x, double y, double z){
+  
+  reposo();
+  delay(1000);
+  if(x<0){ x-=15.0; y+=5;}
+  else if(x > 0){ x+=50.0; z+=10; y-=23;}
+  calcula_angulos(x,y+50.0,75.0+z);
+  abrir_pinza();
+  delay(2000);
+  
+}
+
+void subir_brazo_2(double x, double y, double z){
+
+  if(x<0){ x-=15.0; y+=5;}
+  else if(x > 0){ x+=50.0; z+=10; y-=23;}
+  calcula_angulos(x,y+50.0,75.0+z);
+  delay(2000);
 
 }
 
-
 void mapeo_servo1(double angulo){
-  double angulonuevo = map(angulo,0,180,7,190);
+  double angulonuevo = map(angulo,0,180,20,190);
   if(angulonuevo > 180){
     angulonuevo = 180;
   }
@@ -197,9 +228,9 @@ void cerrar_pinza(){
 
 void reposo(){
   mapeo_servo1(90);
-  mapeo_servo2(90);
-  mapeo_servo3(90);
-  mapeo_servo4(90);
+  mapeo_servo2(145);
+  mapeo_servo3(60);
+  mapeo_servo4(60);
   mapeo_servo5(90);
 }
 
