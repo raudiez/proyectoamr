@@ -206,8 +206,8 @@ def convertPixelsToMillimetres(pixels):
   # rectángulo de la zona de espera mide 130x60mm (ancho x alto), si en la
   # captura, el alto es de X px, entonces 1mm = X / 60 px.
   X = bottomside_center_worzone[1] - topside_center_workzone[1]
-  one_mm_in_px = X/60
-  return pixels / one_mm_in_px
+  one_mm_in_px = 60.0/X
+  return pixels * one_mm_in_px
 
 # Función que obtiene la coordenada X respecto al brazo robótico.
 def getXFromArm():
@@ -273,6 +273,7 @@ def captureAndFind():
   getWristAngle()
   xFromArm = getXFromArm()
   yFromArm = getYFromArm()
+  print "El cubo se encuentra en la posición [",xFromArm,",",yFromArm,"] mm respecto al brazo"
   # Se pinta el lado con el que se calcula el ángulo de la muñeca.
   cv2.line(img, (sorted_cube[0][0],sorted_cube[0][1]), (sorted_cube[1][0],sorted_cube[1][1]), YELLOW, 1)
   cv2.imshow('Cube detection', img)
