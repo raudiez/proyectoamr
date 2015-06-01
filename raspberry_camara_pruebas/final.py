@@ -10,6 +10,8 @@ from math import atan, degrees , sqrt, pow
 
 ########## Variables globales #################
 workzone = []
+workzone2 = []
+square2 = []
 topside_center_workzone = [0,0]
 bottomside_center_worzone = [0,0]
 square = [] # Cubos encontrados, respecto a (0,0) de img.
@@ -122,7 +124,7 @@ def findWorkzone(img):
       for cnt in contours:
         cnt_len = cv2.arcLength(cnt, True)
         cnt = cv2.approxPolyDP(cnt, 0.02*cnt_len, True)
-        if len(cnt) == 4 and cv2.contourArea(cnt) > 40000 and cv2.contourArea(cnt) < 49000 and cv2.isContourConvex(cnt):
+        if len(cnt) == 4 and cv2.contourArea(cnt) > 42000 and cv2.contourArea(cnt) < 49000 and cv2.isContourConvex(cnt):
           cnt = cnt.reshape(-1, 2)
           encontrado = False
           for i in previous:
@@ -188,6 +190,7 @@ def getWristAngle():
 # Función que obtiene el color de la cara superior de un cubo.
 def getColor(img):
   global upperSideColor
+  global center
   imggray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
   upperSideColor = imggray[center[0]][center[1]] # Color de cara superior
   if upperSideColor >= 100 :
@@ -219,10 +222,21 @@ def getYFromArm():
 # Función que limpia las variables globales que se reutilizan en el
 # programa principal.
 def clean():
+  global square
+  global square2
+  global sorted_cube
+  global center
+  global new_center
+  global sideWristAngle
+  global upperSideColor
+  global wristAngle
+  global xFromArm
+  global yFromArm
   square = []
+  square2 = []
   sorted_cube = []
   center = [0,0]
-  new_center = [0,0]pero si el
+  new_center = [0,0]
   sideWristAngle = [0,0]
   upperSideColor = 0
   wristAngle = 0
@@ -235,6 +249,10 @@ def captureAndFind():
   global cont
   global xFromArm
   global yFromArm
+  global workzone
+  global workzone2
+  global square
+  global square2
   cam = cv2.VideoCapture(0)
   ret, img = cam.read()
   # Si es la primera vez que se ejecuta la función, se busca la zona de trabajo,
@@ -243,10 +261,12 @@ def captureAndFind():
     findWorkzone(img)
     print "El nuevo origen de coordenadas sera [",convertPixelsToMillimetres(bottomside_center_worzone[0]),",",convertPixelsToMillimetres(bottomside_center_worzone[1]),"] mm"
     print "Utilizando ese punto como nuevo SR."
-  cv2.drawContours(img, workzone, -1, GREEN, 2)
+    workzone2.append(workzone)
+  cv2.drawContours(img, workzone2, -1, GREEN, 2)
   findSquares(img)
   getColor(img)
-  cv2.drawContours(img, square, -1, RED, 3) # Se pinta el cubo.
+  square2.append(square)
+  cv2.drawContours(img, square2, -1, RED, 3) # Se pinta el cubo.
   # Se pinta el eje de referencia.
   cv2.line(img, (topside_center_workzone[0],topside_center_workzone[1]), (bottomside_center_worzone[0],bottomside_center_worzone[1]), BLUE, 1)
   changeSR()
@@ -262,7 +282,7 @@ def captureAndFind():
   cam.release()
 
 if __name__ == '__main__':
-  while cont < 2 : # Se itera mientras cont < 2 (2 = num cubos -1)
+  while cont <= 2 : # Se itera mientras cont < 2 (2 = num cubos -1)
     # Se realiza una captura con la cámara y se busca un cubo.
     captureAndFind()
     print "##############################"
