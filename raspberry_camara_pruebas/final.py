@@ -192,7 +192,7 @@ def getColor(img):
   global upperSideColor
   global center
   imggray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-  upperSideColor = imggray[center[0]][center[1]] # Color de cara superior
+  upperSideColor = imggray[center[1]][center[0]] # Color de cara superior
   if upperSideColor >= 100 :
     color = "blanco"
   else :
