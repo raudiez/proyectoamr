@@ -1,7 +1,6 @@
 #include <Servo.h>
 #include <math.h>
 
-
 Servo myservo1, myservo2, myservo3, myservo4, myservo5, myservo6;  //create servo object
 
 double cabeceo = 90-20.8456;// angulo en grados
@@ -15,9 +14,7 @@ double angulo_brazo, angulo_antebrazo, angulo_muneca;
 int estado_pinza = 0; // el 0 está abierto y el 1 estará la pinza cerrada
 
 void setup(){
-
   Serial.begin(9600);
-
   myservo1.attach(7); //servo del soporte giratorio! base
   myservo2.attach(8); //hombro
   myservo3.attach(9); //codo...sube o baja el brazo
@@ -39,66 +36,19 @@ void setup(){
 }
 
 void loop(){
-  /*double x=10.0;
-  double y=100.0;
-  double z=10.0;*/
-
   reposo();
   delay(1000);
   abrir_pinza();
   delay(2000);
-  mover_hacia_cubo(-12.8,107.6,-5.0);
+  mover_hacia_cubo(-3.5,105.5,10.0);
   delay(2000);
-/*
-  //va a por el cubo.
-  if(x<0){ x-=15.0; y+=5;}
-  else if(x > 0){ x+=50.0; z+=10; y-=23;}
-  calcula_angulos(x,y+50.0,75.0+z);
-  delay(1000);*/
-  
   cerrar_pinza();
   delay(1000);
   reposo();
-
-  //subir_brazo(10.0,100.0,60.0);
-  //soltar_cubo(120.0,120.0,10.0);
-  //subir_brazo_2(120.0,120.0,60.0);
-/*
-  //sube
-  x=10.0;
-  y=100.0;
-  z=60.0;
-  if(x<0){ x-=15.0; y+=5;}
-  else if(x > 0){ x+=50.0; z+=10; y-=23;}
-  calcula_angulos(x,y+50.0,75.0+z);
-  delay(2000);*/
-/*
-  //va a soltar el cubo.
-  reposo();
-  delay(1000);
-  x=100.0;
-  y=120.0;
-  z=10.0;
-  if(x<0){ x-=15.0; y+=5;}
-  else if(x > 0){ x+=50.0; z+=10; y-=23;}
-  calcula_angulos(x,y+50.0,75.0+z);
-  abrir_pinza();
-  delay(2000);*/
-/*
-  //sube
-  x=100.0;
-  y=120.0;
-  z=60.0;
-  if(x<0){ x-=15.0; y+=5;}
-  else if(x > 0){ x+=50.0; z+=10; y-=23;}
-  calcula_angulos(x,y+50.0,75.0+z);
-  delay(2000);*/
 }
 
 
 void mover_hacia_cubo(double x, double y, double z){
-
-  //if(x<0){ x-=15.0; y+=5;}
   if(x > 0){ x+=50.0; z+=10; y-=23;}
   calcula_angulos(x,y+50.0,75.0+z);
   delay(1000);
@@ -106,16 +56,13 @@ void mover_hacia_cubo(double x, double y, double z){
 }
 
 void subir_brazo(double x, double y, double z){
-
   if(x<0){ x-=15.0; y+=5;}
   else if(x > 0){ x+=50.0; z+=10; y-=23;}
   calcula_angulos(x,y+50.0,75.0+z);
   delay(2000);
-  
 }
 
 void soltar_cubo(double x, double y, double z){
-  
   reposo();
   delay(1000);
   if(x<0){ x-=15.0; y+=5;}
@@ -123,16 +70,6 @@ void soltar_cubo(double x, double y, double z){
   calcula_angulos(x,y+50.0,75.0+z);
   abrir_pinza();
   delay(2000);
-  
-}
-
-void subir_brazo_2(double x, double y, double z){
-
-  if(x<0){ x-=15.0; y+=5;}
-  else if(x > 0){ x+=50.0; z+=10; y-=23;}
-  calcula_angulos(x,y+50.0,75.0+z);
-  delay(2000);
-
 }
 
 void mapeo_servo1(double angulo){
@@ -140,78 +77,23 @@ void mapeo_servo1(double angulo){
   if(angulonuevo > 180){
     angulonuevo = 180;
   }
-  double anguloactual = myservo1.read();
-  if(angulonuevo >= anguloactual){
-    for(int i=anguloactual;i<=angulonuevo;i++){
-      myservo1.write(i);
-      delay(30);
-    }
-  }else{
-    for(int i=anguloactual;i>=angulonuevo;i--){
-      myservo1.write(i);
-      delay(30);
-    }
-  }
+  myservo1.write(angulonuevo);
 }
 void mapeo_servo2(double angulo){
   double angulonuevo = map(angulo,0,180,-10,170);
-  double anguloactual = myservo2.read();
-  if(angulonuevo >= anguloactual){
-  for(int i=anguloactual;i<=angulonuevo;i++){
-      myservo2.write(i);
-      delay(30);
-    }
-  }else{
-    for(int i=anguloactual;i>=angulonuevo;i--){
-      myservo2.write(i);
-      delay(30);
-    }
-  }
+  myservo2.write(angulonuevo);
 }
 void mapeo_servo3(double angulo){
- double angulonuevo = map(angulo,0,180,-21,159);
- double anguloactual = myservo3.read();
-  if(angulonuevo >= anguloactual){
-  for(int i=anguloactual;i<=angulonuevo;i++){
-      myservo3.write(i);
-      delay(30);
-    }
-  }else{
-    for(int i=anguloactual;i>=angulonuevo;i--){
-      myservo3.write(i);
-      delay(30);
-    }
-  }
+  double angulonuevo = map(angulo,0,180,-21,159);
+  myservo3.write(angulonuevo);
 }
 void mapeo_servo4(double angulo){
- double angulonuevo = map(angulo,0,180,180,0);  //NO necesita mapeo
- double anguloactual = myservo4.read();
-  if(angulonuevo >= anguloactual){
-  for(int i=anguloactual;i<=angulonuevo;i++){
-      myservo4.write(i);
-      delay(30);
-    }
-  }else{
-    for(int i=anguloactual;i>=angulonuevo;i--){
-      myservo4.write(i);
-      delay(30);
-    }
-  }
+  double angulonuevo = map(angulo,0,180,180,0);  //NO necesita mapeo
+  myservo4.write(angulonuevo);
 }
 void mapeo_servo5(double angulo){
   double angulonuevo = map(angulo,0,180,16,180);
-  double anguloactual = myservo5.read();
-  if(angulonuevo >= anguloactual){
-    for(int i=anguloactual;i<=angulonuevo;i++){
-      myservo5.write(i);
-      delay(30);
-    }
-  }else{
-    for(int i=anguloactual;i>=angulonuevo;i--){
-      myservo5.write(i);
-      delay(30);
-    }
-  }
+  myservo5.write(angulonuevo);
 }
 void abrir_pinza(){
   if(estado_pinza == 1){
@@ -227,99 +109,74 @@ void cerrar_pinza(){
 }
 
 void reposo(){
-  mapeo_servo1(90);
-  mapeo_servo2(145);
-  mapeo_servo3(60);
-  mapeo_servo4(60);
   mapeo_servo5(90);
+  delay(1000);
+  mueve_brazo(90,145,60,60);
 }
 
 void calcula_angulos(double x, double y, double z){
-
   double x_cuadrado = pow(x,2);
   double y_cuadrado = pow(y,2);
-
- double giro = asin(abs(x)/(sqrt(x_cuadrado+y_cuadrado)));
- Serial.print("Angulo giro radianes: ");
- Serial.println(giro);
+  double giro = asin(abs(x)/(sqrt(x_cuadrado+y_cuadrado)));
   giro = (giro*360)/(2*PI);
-    if(x > 0){
+  if(x > 0){
     giro = giro + 90;
-    mapeo_servo1(giro);
-  }
-  else {
+  }else {
      giro =  90 - giro;
-     mapeo_servo1(giro);
   }
-  delay(2000);
-  Serial.print("Angulo giro grados: ");
-  Serial.println(giro);
-
   double modulo = (sqrt(x_cuadrado+y_cuadrado))-18.3;
-   Serial.print("Modulo: ");
-   Serial.println(modulo);
-
-
   double y_prima = z;
-
   double afx = abs(cos(cabeceo))*longitud_muneca;
-  Serial.print("AFX: ");
-  Serial.println(afx);
-
   double x_prima = modulo;
   double ladoB = x_prima - afx;
-  Serial.print("LadoB: ");
-  Serial.println(ladoB);
-
   double afy = abs(sin(cabeceo))*longitud_muneca;
-  Serial.print("AFY: ");
-  Serial.println(afy);
-
   double ladoA = y_prima + afy - altura_hombro;
-  Serial.print("LadoA: ");
-  Serial.println(ladoA);
-
   double hipotenusa = sqrt(pow(ladoA,2)+pow(ladoB,2));
-  Serial.print("Hipotenusa: ");
-  Serial.println(hipotenusa);
-
   alfa = abs(atan2(ladoA,ladoB));
-  Serial.print("Alfa en radianes: ");
-  Serial.println(alfa);
-
   double operacion_beta = ((pow(longitud_brazo,2)) - (pow(longitud_antebrazo,2)) + (pow(hipotenusa,2)))/(2*longitud_brazo*hipotenusa);
-    Serial.print("operacion_beta: ");
-  Serial.println(operacion_beta);
-
   beta = abs(acos(operacion_beta));
-  Serial.print("Beta en radianes: ");
-  Serial.println(beta);
-
-  //angulo_brazo = alfa+beta;
   angulo_brazo = ((alfa*360)/(2*PI))+((beta*360)/(2*PI));
-  Serial.print("Angulo hombro (brazo) en grados: ");
-  Serial.println(angulo_brazo);
-
-
   double operacion_gamma = ((pow(longitud_brazo,2)) + (pow(longitud_antebrazo,2)) - (pow(hipotenusa,2)))/(2*longitud_brazo*longitud_antebrazo);
   gamma = ((acos(operacion_gamma))*360)/(2*PI);
-
-  Serial.print("Gamma en grados: ");
-  Serial.println(gamma);
-
   angulo_antebrazo = gamma;
-
-  Serial.print("Angulo antebrazo (codo) en grados: ");
-  Serial.println(angulo_antebrazo);
-
   angulo_muneca = 180+(cabeceo- angulo_brazo - angulo_antebrazo);
-  Serial.print("Angulo muneca en grados: ");
-  Serial.println(angulo_muneca);
 
-  mapeo_servo4(angulo_muneca+30);
-  mapeo_servo3(angulo_antebrazo);
-  mapeo_servo2(angulo_brazo);
-
+  mueve_brazo(giro,angulo_brazo,angulo_antebrazo,angulo_muneca+30);
 }
 
+void mueve_brazo(double giro,double angulo_brazo,double angulo_antebrazo,double angulo_muneca){
+  double anguloactual1 = myservo1.read();
+  double anguloactual2 = myservo2.read();
+  double anguloactual3 = myservo3.read();
+  double anguloactual4 = myservo4.read();
+  double i1=anguloactual1, i2=anguloactual2, i3=anguloactual3, i4=anguloactual4;
+  boolean i1end=false, i2end=false, i3end=false, i4end=false;
 
+  while(!i1end || !i2end || !i3end || !i4end){
+    if(giro >= anguloactual1 && !i1end){
+      i1++;
+    }else if(giro < anguloactual1 && !i1end){i1--;}
+    if(i1 == giro) i1end = true;
+
+    if(angulo_brazo >= anguloactual2 && !i2end){
+      i2++;
+    }else if(angulo_brazo < anguloactual2 && !i2end){i2--;}
+    if(i2 == angulo_brazo) i2end = true;
+
+    if(angulo_antebrazo >= anguloactual3 && !i3end){
+      i3++;
+    }else if(angulo_antebrazo < anguloactual3 && !i3end){i3--;}
+    if(i3 == angulo_antebrazo) i3end = true;
+
+    if(angulo_muneca >= anguloactual4 && !i4end){
+      i4++;
+    }else if(angulo_muneca < anguloactual4 && !i4end){i4--;}
+    if(i4 == angulo_muneca) i4end = true;
+
+    mapeo_servo1(i1);
+    mapeo_servo2(i2);
+    mapeo_servo3(i3);
+    mapeo_servo4(i4);
+    delay(60);
+  }
+}
