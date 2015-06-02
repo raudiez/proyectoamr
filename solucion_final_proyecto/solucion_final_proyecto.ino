@@ -14,15 +14,12 @@ const int C = 5;
 const int D = 6;
 
 //CNYs
-const float ResolutionADC = 0.00488; //4.88mV
 const int CNY_Pin1 = A1, CNY_Pin2 = A2;
 int Valor_CNY1 = 0, Valor_CNY2 = 0;
-float Voltage1, Voltage2;
+int lecturaCNY1 = 0, lecturaCNY2 = 0;
 
 //Contadores para las caras de los cubos
-int blancas1 = 0, negras1 = 0, blancas2 = 0, negras2 = 0, total_blancas, total_negras;
-double lecturaCNY1, lecturaCNY2;
-
+int caras_analizadas = 0, blancas = 0, negras = 0, blancas2 = 0, negras2 = 0, total_caras = 0;
 
 void setup() {
  Serial.begin(9600);
@@ -55,53 +52,50 @@ void loop() {
   
   delay(3000);
   
- for(int i = 0; i <=4; i++){
+ for(int i = 0; i <=3; i++){
+   lecturaCNY1 = lectura_CNY1();
+    if(lecturaCNY1 < 200){
+        Serial.println("Cara blanca detectada");
+        blancas++;
+    } else if(lecturaCNY1 > 200){
+        Serial.println("Cara negra detectada");
+        negras++;
+    } else{} //Si no es ni blanca ni negra no hace nada. Esto creo que se podría quitar pero de momento se deja
+   caras_analizadas++;
    mover_motor();
-   delay(1000);
-   stopMotor();
-  lecturaCNY1 = lectura_CNY1();
-  
-  if(lecturaCNY1 <= 1){
-  Serial.println("Cara negra detectada");
-  negras1++;
-
- } else{
-  Serial.println("Cara blanca detectada");
-  blancas1++;
-  }
+   delay(2000);
+   //stopMotor(); //Esto no se si hace falta debido a los delays que ya posee
  }
  
- Serial.print("Hay ");
- Serial.print(negras1);
- Serial.println(" caras negras detectadas por el CNY del motor");
+   Serial.print("Hay ");
+   Serial.print(negras);
+   Serial.println(" caras negras detectadas por el CNY del motor");
  
- Serial.print("Hay ");
- Serial.print(blancas1);
- Serial.println(" caras blancas detectadas por el CNY del motor");
+   Serial.print("Hay ");
+   Serial.print(blancas);
+   Serial.println(" caras blancas detectadas por el CNY del motor");
    
   lecturaCNY2 = lectura_CNY2();
- 
-  if(lecturaCNY2 <= 1){
-  Serial.println("Cara negra detectada por el CNY de abajo");
-  negras2 = 1;
- } else{
-  Serial.println("Cara blanca detectada por el CNY de abajo");
- blancas2 = 1;
- }
- 
- total_blancas = blancas1 + blancas2;
- total_negras = negras1 + negras2;
- 
- Serial.print("Hay ");
- Serial.print(total_blancas);
- Serial.println(" caras blancas en total");
- 
- Serial.print("Hay ");
- Serial.print(total_negras);
- Serial.println(" caras negras en total");
- 
+    if(lecturaCNY2 < 200){
+        Serial.println("Cara blanca detectada por el CNY de abajo");
+        blancas2 = 1;
+        caras_analizadas++;
+   } else if(lecturaCNY2 > 200){
+        Serial.println("Cara negra detectada por el CNY de abajo");
+        negras2 = 1;
+        caras_analizadas++;
+   } else{}
+   
+   total_caras = blancas + negras + blancas2 + negras2; //Habría que sumarle también la cara detectada por la cámara
 
-
+   Serial.print("En total hay ");
+   Serial.print(total_caras);
+   Serial.println(" caras de las cuales hay ");
+   Serial.print(blancas+blancas2);
+   Serial.println(" blancas y ");
+   Serial.print(negras+negras2);
+   Serial.println(" negras");
+ 
 }
 
 void lectura_LDR1(){
@@ -167,30 +161,18 @@ void lectura_LDR3(){
    delay(1000); // A mayor valor mas lenta sera la respuesta a los cambios de luminosidad
 }
 
-double lectura_CNY1(){
+int lectura_CNY1(){
   
-  // Reads the sensor and return a value between 0-1023
  Valor_CNY1 = analogRead(CNY_Pin1);
-
-// Calculates the equivalent voltage
- Voltage1 = Valor_CNY1 * ResolutionADC;
- Serial.print("Voltaje1 (V): ");
- Serial.println(Voltage1);
- delay(1000);
- return Voltage1;
+ return Valor_CNY1;
+ 
  }
 
 
-double lectura_CNY2(){
+int lectura_CNY2(){
 
  Valor_CNY2 = analogRead(CNY_Pin2);
-
-// Calculates the equivalent voltage
- Voltage2 = Valor_CNY2 * ResolutionADC;
- Serial.print("Voltaje2 (V): ");
- Serial.println(Voltage2);
- delay(1000);
- return Voltage2;
+ return Valor_CNY2;
 
 }
 
@@ -211,6 +193,7 @@ void step1(){
  digitalWrite(D,LOW);
  delay(period);
 }
+
 void step2(){
  digitalWrite(A,LOW);
  digitalWrite(B,HIGH);
@@ -218,6 +201,7 @@ void step2(){
  digitalWrite(D,LOW);
  delay(period);
 }
+
 void step3(){
  digitalWrite(A,LOW);
  digitalWrite(B,LOW);
@@ -225,6 +209,7 @@ void step3(){
  digitalWrite(D,HIGH);
  delay(period);
 }
+
 void step4(){
  digitalWrite(A,HIGH);
  digitalWrite(B,LOW);
@@ -232,6 +217,7 @@ void step4(){
  digitalWrite(D,HIGH);
  delay(period);
 }
+
 void stopMotor() {
  digitalWrite(A,LOW);
  digitalWrite(B,LOW);
