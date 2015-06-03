@@ -36,6 +36,7 @@ void setup() {
  pinMode(pinLED3,OUTPUT);
  pinMode(LDR3,INPUT);
  analogWrite(pinLED3,0); //Esto no hace falta al ser entradas análogicaso
+ //digitalWrite(pinLED3,LOW); //por si acaso
  
  pinMode(A, OUTPUT);
  pinMode(B, OUTPUT);
