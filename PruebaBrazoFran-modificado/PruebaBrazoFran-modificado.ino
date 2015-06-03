@@ -13,6 +13,9 @@ double angulo_brazo, angulo_antebrazo, angulo_muneca;
 
 int estado_pinza = 0; // el 0 está abierto y el 1 estará la pinza cerrada
 
+String cadena = "";
+
+
 void setup(){
   Serial.begin(9600);
   myservo1.attach(7); //servo del soporte giratorio! base
@@ -40,7 +43,15 @@ void loop(){
   delay(1000);
   abrir_pinza();
   delay(2000);
-  mover_hacia_cubo(-3.5,105.5,10.0);
+  /*
+  if (Serial.available()){
+  
+    cadena = Serial.readString();
+    double val = atof(cadena);
+    for(int i=0, i< cadena.
+  
+  }*/
+  mover_hacia_cubo(-8.0,105.0,5.0);
   delay(2000);
   cerrar_pinza();
   delay(1000);
@@ -49,7 +60,7 @@ void loop(){
 
 
 void mover_hacia_cubo(double x, double y, double z){
-  if(x > 0){ x+=50.0; z+=10; y-=23;}
+  //if(x > 0){ x+=50.0; z+=10; y-=23;}
   calcula_angulos(x,y+50.0,75.0+z);
   delay(1000);
 
