@@ -7,8 +7,10 @@
 import numpy as np
 import cv2
 from math import atan, degrees , sqrt, pow
+import serial
 
 ########## Variables globales #################
+arduino = serial.Serial('/dev/ttyACM0', 9600)
 workzone = []
 workzone2 = []
 square2 = []
@@ -20,6 +22,7 @@ center = [0,0]
 cont = 0
 new_center = [0,0]
 sideWristAngle = [0,0]
+raspiData = ""
 
 # Variables finales a enviar a Arduino (estas variables se reinicializan para
 # cada nuevo cubo encontrado):
@@ -219,6 +222,34 @@ def getYFromArm():
   global yDistanceFromArm
   return yDistanceFromArm - convertPixelsToMillimetres(new_center[1])
 
+# Función que formatea la cadena a enviar a Arduino, añadiendo los valores
+# a enviar.
+def getDataString():
+  global raspiData
+  raspiData = raspiData + np.array_str(upperSideColor)
+  raspiData = raspiData + ","
+  raspiData = raspiData + str(round(wristAngle))
+  raspiData = raspiData + ","
+  raspiData = raspiData + str(round(xFromArm))
+  raspiData = raspiData + ","
+  raspiData = raspiData + str(round(yFromArm))
+  print raspiData
+
+# Función que obtiene la información a enviar a Arduino y la envía.
+def sendDataToArduino():
+  getDataString()
+  arduino.write(raspiData)
+
+# Función que espera hasta que Arduino termine su función y envíe un mensaje
+# de finalización de tarea.
+def waitForArduino():
+  wait = True
+  arduinoState = ''
+  while wait :
+    arduinoState = arduino.readLine()
+    if arduinoState == 'terminado\n'
+      wait = False
+
 # Función que limpia las variables globales que se reutilizan en el
 # programa principal.
 def clean():
@@ -232,6 +263,7 @@ def clean():
   global wristAngle
   global xFromArm
   global yFromArm
+  global raspiData
   square = []
   square2 = []
   sorted_cube = []
@@ -242,6 +274,7 @@ def clean():
   wristAngle = 0
   xFromArm = 0
   yFromArm = 0
+  raspiData = ""
 
 # Función que realiza una captura con la cámara, busca los cubos, e imprime
 # por pantalla información como ángulos, posición, y los pinta en la captura.
@@ -253,6 +286,7 @@ def captureAndFind():
   global workzone2
   global square
   global square2
+  global raspiData
   cam = cv2.VideoCapture(0)
   ret, img = cam.read()
   # Si es la primera vez que se ejecuta la función, se busca la zona de trabajo,
@@ -276,6 +310,9 @@ def captureAndFind():
   print "El cubo se encuentra en la posición [",xFromArm,",",yFromArm,"] mm respecto al brazo"
   # Se pinta el lado con el que se calcula el ángulo de la muñeca.
   cv2.line(img, (sorted_cube[0][0],sorted_cube[0][1]), (sorted_cube[1][0],sorted_cube[1][1]), YELLOW, 1)
+
+  getDataString()
+
   cv2.imshow('Cube detection', img)
   ch = 0xFF & cv2.waitKey()
   cv2.destroyAllWindows()
@@ -287,3 +324,4 @@ if __name__ == '__main__':
     # Se realiza una captura con la cámara y se busca un cubo.
     captureAndFind()
     print "##############################"
+  arduino.close()
