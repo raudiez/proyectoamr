@@ -27,25 +27,46 @@ void setup(){
 }
 
 void loop(){
+  
+
   reposo();
   delay(1000);
   abrir_pinza();
   delay(1000);
   /*
-  if (Serial.available()){
+  if (Serial.available() > 0){
+    
+    int longitud;
+    longitud = cadena.length();
+    char cad[(longitud+1)];
+    char letra;
+    String cadena2;
 
-    cadena = Serial.readString();
-    double val = atof(cadena);
-    for(int i=0, i< cadena.
-
+    //cadena = Serial.readString();
+   
+    
+    for(int i = 0, i < longitud;i++){
+      
+      cad[i] = cadena.charAt(i);   
+    }
+      cad[i] = 0;
+      double val = atof(cadena,2);
+      letra = Serial.read();
+      cadena2 += letra;
+      
+      if(cadena2.length() == 4){ //Se recibe el color de la cara superior, el ángulo de muñeca, y las coordenadas (x,y)
+          
+      }
   }*/
+  
+  
   mover_brazo(49.0,101.0,-4.0);
   delay(1000);
   cerrar_pinza();
   delay(1000);
   subir_brazo();
   delay(1000);
-  cubeta3();
+  cubeta1();
   delay(1000);
   abrir_pinza();
   delay(1000);
