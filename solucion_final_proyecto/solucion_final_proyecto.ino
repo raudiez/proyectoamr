@@ -21,8 +21,12 @@
 
   //Contadores para las caras de los cubos
   int caras_analizadas = 0, negras = 0, negras2 = 0, negras3 = 0, total_negras = 0;
-
-  String cara_camara;
+  
+  //Comunicación
+  double x = 0.0, y = 0.0, angulo = 0.0, decimal = 0.0;
+  boolean varX = false, varY = false, varAnguloDecimal = false, colorCaraSuperior = false;
+  String auxiliar = "", lecturaSerie, colorSuperior = "";
+  char letra;
 
   //Servomotores
   Servo myservo1, myservo2, myservo3, myservo4, myservo5, myservo6;
@@ -67,18 +71,63 @@
 
 void loop() {
   
-  //Primero, se inicia la comunicación
-  
-
-
-
-
   reposo();
   delay(1000);
   abrir_pinza();
   delay(1000);
+  
+  //Se inicia la comunicación y se convierte el valor leído a double (o float en este caso, puesto que no existe función toDouble() de String), para después pasarlo a la función mover_brazo
+  if(Serial.available() > 0){
+    lecturaSerie = Serial.readString();
+    auxiliar = "";
+    colorCaraSuperior = false;
+    varAnguloDecimal = false;
+    varX = false;
+    varY = false; 
+   
+    for (int i = 0; i < lecturaSerie.length();i++){
 
-  mover_brazo(49.0,101.0,-4.0);
+      if(!colorCaraSuperior){
+           letra = lecturaSerie.charAt(i);
+              if(letra !=';'){
+                auxiliar += letra;
+            }else{
+                colorCaraSuperior = true;
+                colorSuperior = auxiliar;
+                auxiliar = "";}
+
+       } else if (!varAnguloDecimal){
+            letra = lecturaSerie.charAt(i);
+              if(letra !=';'){
+                auxiliar += letra;
+              }else{
+                varAnguloDecimal = true;
+                decimal = auxiliar.toFloat();
+                angulo += (decimal / 100.0);
+                auxiliar = "";}
+   
+        } else if(!varX){
+            letra = lecturaSerie.charAt(i);
+              if(letra !=';'){
+                auxiliar += letra;
+            }else{
+                varX = true;
+                x = auxiliar.toFloat();
+                auxiliar = "";}
+
+        } else if (!varY){
+            letra = lecturaSerie.charAt(i);
+              if(letra !=';'){
+                auxiliar += letra;
+              }else{
+                varY = true;
+                y = auxiliar.toFloat();
+                auxiliar = "";}
+      }
+    }
+  }  
+
+  mover_brazo(x,y,-4.0); //Se le manda la x e y recibidas desde la Raspberry
   delay(1000);
 
   cerrar_pinza();
@@ -100,7 +149,6 @@ void loop() {
       Serial.println("Cara negra detectada por CNY plataforma");
       negras++;
       caras_analizadas++;
-
     }
     mover_motor();
   }
@@ -115,7 +163,7 @@ void loop() {
     }
   
   
-  if(cara_camara == "Negro" || cara_camara == "negro"){
+  if(colorSuperior == "Negro" || colorSuperior == "negro"){
     caras_analizadas++;
     negras3 = 1;
   }
@@ -199,9 +247,7 @@ void loop() {
 
     subir_brazo();
   }
-
-  
- 
+    Serial.write("terminado"); //Si no funcionase, cambiar por Serial.println
 }
 
 int lectura_LDR1(){
@@ -225,7 +271,7 @@ int lectura_CNY1(){
   
  Valor_CNY1 = analogRead(CNY_Pin1);
  return Valor_CNY1;
- }
+}
 
 
 int lectura_CNY2(){
