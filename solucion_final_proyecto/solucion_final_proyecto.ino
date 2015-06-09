@@ -89,7 +89,7 @@ void loop() {
 
       if(!colorCaraSuperior){
            letra = lecturaSerie.charAt(i);
-              if(letra !=';'){
+              if(letra !=','){
                 auxiliar += letra;
             }else{
                 colorCaraSuperior = true;
@@ -98,7 +98,7 @@ void loop() {
 
        } else if (!varAnguloDecimal){
             letra = lecturaSerie.charAt(i);
-              if(letra !=';'){
+              if(letra !=','){
                 auxiliar += letra;
               }else{
                 varAnguloDecimal = true;
@@ -108,7 +108,7 @@ void loop() {
    
         } else if(!varX){
             letra = lecturaSerie.charAt(i);
-              if(letra !=';'){
+              if(letra !=','){
                 auxiliar += letra;
             }else{
                 varX = true;
@@ -117,7 +117,7 @@ void loop() {
 
         } else if (!varY){
             letra = lecturaSerie.charAt(i);
-              if(letra !=';'){
+              if(letra !=','){
                 auxiliar += letra;
               }else{
                 varY = true;
@@ -127,7 +127,7 @@ void loop() {
     }
   }  
 
-  mover_brazo(x,y,-4.0); //Se le manda la x e y recibidas desde la Raspberry
+  mover_brazo(49.0,101.0,-4.0); //Se le manda la x e y recibidas desde la Raspberry
   delay(1000);
 
   cerrar_pinza();
@@ -135,13 +135,13 @@ void loop() {
   subir_brazo();
   delay(1000);
 
-  plataforma();
-  delay(1000);
-  abrir_pinza();
-  delay(1000);
 
-  subir_brazo();
-  delay(1000);
+
+    plataforma();
+    delay(1000);
+
+    abrir_pinza();
+    delay(1000);
   
   for(int i = 0; i<=3;i++){
     lecturaCNY1 = lectura_CNY1();
@@ -170,7 +170,7 @@ void loop() {
 
   total_negras = negras + negras2 + negras3;
 
-  if(total_negras == 0){
+  /*if(total_negras == 0){
     plataforma();
     delay(1000);
 
@@ -248,6 +248,28 @@ void loop() {
     subir_brazo();
   }
     Serial.write("terminado"); //Si no funcionase, cambiar por Serial.println
+    */
+    
+     lecturaLDR1 = lectura_LDR1();
+      if(lecturaLDR1 < umbral){
+        digitalWrite(pinLED1, HIGH);
+      } else {
+        digitalWrite(pinLED1,LOW);
+      }
+      
+       lecturaLDR2 = lectura_LDR2();
+      if(lecturaLDR2 < umbral2){
+        digitalWrite(pinLED2, HIGH);
+      } else {
+        digitalWrite(pinLED2,LOW);
+      }
+      
+       lecturaLDR3 = lectura_LDR3();
+      if(lecturaLDR3 < umbral3){
+        digitalWrite(pinLED3, HIGH);
+      } else {
+        digitalWrite(pinLED3,LOW);
+      }
 }
 
 int lectura_LDR1(){
@@ -312,19 +334,19 @@ void cubeta2(){
 }
 
 void cubeta3(){
-  myservo1.write(48);
+  myservo5.write(15);
+  myservo1.write(45);
   mapeo_servo4(130);
-  myservo5.write(90);
   mapeo_servo2(84);
   mapeo_servo3(50);
 }
 
 void plataforma(){
-  myservo1.write(108);
-  mapeo_servo4(130);
-  myservo5.write(90);
-  mapeo_servo2(84);
-  mapeo_servo3(50);
+  myservo5.write(161);
+  myservo1.write(179);
+  mapeo_servo4(120);
+  mapeo_servo2(97);
+  mapeo_servo3(49);
 }
 
 void subir_brazo(){
