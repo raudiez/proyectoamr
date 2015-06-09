@@ -1,8 +1,18 @@
   #include <Servo.h>
   #include <math.h>
 
-  //LEDs
-  int pinLED1 = 14, pinLED2 = 13, pinLED3 = 2;
+  #define pinLED1 13
+  #define pinLED2 A0
+  #define pinLED3 2
+  
+  #define CNY_Pin1 1
+  #define CNY_Pin2 2
+  
+  #define pinMotor1 3
+  #define pinMotor2 4
+  #define pinMotor3 5
+  #define pinMotor4 6 
+
 
   //LDRs
   int LDR1 = 3, LDR2 = 4, LDR3 = 5; 
@@ -12,10 +22,8 @@
 
   //motor paso a paso
   const int period = 2; // 2 ms cada paso
-  const int pinMotor1 = 3, pinMotor2 = 4, pinMotor3 = 5, pinMotor4 = 6;
 
   //CNYs
-  const int CNY_Pin1 = 1, CNY_Pin2 = 2;
   int Valor_CNY1 = 0, Valor_CNY2 = 0;
   int lecturaCNY1 = 0, lecturaCNY2 = 0;
 
@@ -127,7 +135,7 @@ void loop() {
     }
   }  
 
-  mover_brazo(49.0,101.0,-4.0); //Se le manda la x e y recibidas desde la Raspberry
+  mover_brazo(x,y,-4.0); //Se le manda la x e y recibidas desde la Raspberry
   delay(1000);
 
   cerrar_pinza();
@@ -137,7 +145,7 @@ void loop() {
 
 
 
-    plataforma();
+    cubeta2();
     delay(1000);
 
     abrir_pinza();
@@ -249,7 +257,7 @@ void loop() {
   }
     Serial.write("terminado"); //Si no funcionase, cambiar por Serial.println
     */
-    
+    /*
      lecturaLDR1 = lectura_LDR1();
       if(lecturaLDR1 < umbral){
         digitalWrite(pinLED1, HIGH);
@@ -269,7 +277,7 @@ void loop() {
         digitalWrite(pinLED3, HIGH);
       } else {
         digitalWrite(pinLED3,LOW);
-      }
+      }*/
 }
 
 int lectura_LDR1(){
@@ -324,6 +332,7 @@ void cubeta1(){
   mapeo_servo4(130);
   mapeo_servo2(84);
   mapeo_servo3(50);
+  digitalWrite(pinLED1,HIGH);
 }
 
 void cubeta2(){
@@ -331,6 +340,7 @@ void cubeta2(){
   mapeo_servo4(130);
   mapeo_servo2(84);
   mapeo_servo3(50);
+  digitalWrite(pinLED2,HIGH);
 }
 
 void cubeta3(){
@@ -339,6 +349,7 @@ void cubeta3(){
   mapeo_servo4(130);
   mapeo_servo2(84);
   mapeo_servo3(50);
+  digitalWrite(pinLED3,HIGH);
 }
 
 void plataforma(){
