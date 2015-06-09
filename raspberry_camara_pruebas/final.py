@@ -8,6 +8,7 @@ import numpy as np
 import cv2
 from math import atan, degrees , sqrt, pow
 import serial
+import RPi.GPIO as GPIO
 
 ########## Variables globales #################
 arduino = serial.Serial('/dev/ttyACM0', 9600)
@@ -43,6 +44,28 @@ YELLOW=(0,255,255)
 ORANGE=(0,150,255)
 WHITE=(255,255,255)
 BLACK=(0,0,0)
+
+### LED RGB ###
+# Mapeo de pines del LED.
+blue = 18
+green = 27 #Pin 27 en B+, 21 en B.
+red = 17
+
+# Configuración GPIO.
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(red, GPIO.OUT)
+GPIO.setup(green, GPIO.OUT)
+GPIO.setup(blue, GPIO.OUT)
+
+# Configuración de colores usando PWM por software. Control individual del
+# brillo de cada color.
+RED = GPIO.PWM(red, 100)
+GREEN = GPIO.PWM(green, 100)
+BLUE = GPIO.PWM(blue, 100)
+RED.start(100)
+GREEN.start(100)
+BLUE.start(100)
 
 ######## Definición de funciones ##################
 
@@ -187,6 +210,9 @@ def getWristAngle():
   alpha = degrees(atan(b/c))
   if sideWristAngle[0][0] < sideWristAngle[1][0] and sideWristAngle[0][1] > sideWristAngle[1][1]:
     alpha = -degrees(atan(b/c))
+  # Hasta aquí, cálculo del ángulo respecto a SR. Ahora se cambia respecto
+  # al 0,0 del brazo robótico.
+  alpha = -alpha
   print "Tiene un giro sobre si mismo de",alpha,"grados"
   wristAngle = alpha
 
@@ -207,7 +233,7 @@ def getColor(img):
 def convertPixelsToMillimetres(pixels):
   # Para convertir de px a mm, se utiliza una regla de 3. Sabiendo que el
   # rectángulo de la zona de espera mide 130x60mm (ancho x alto), si en la
-  # captura, el alto es de X px, entonces 1mm = X / 60 px.
+  # captura, el alto es de X px, entonces 1mm = 60 px / X.
   X = bottomside_center_worzone[1] - topside_center_workzone[1]
   one_mm_in_px = 60.0/X
   return pixels * one_mm_in_px
@@ -319,9 +345,19 @@ def captureAndFind():
   clean()
   cam.release()
 
+# Set a color by giving R, G, and B values of 0-255.
+# def setColor(rgb = []):
+#   print rgb
+#   # Convert 0-255 range to 0-100.
+#   rgb = [(abs(x-255) / 255.0) * 100 for x in rgb]
+#   RED.ChangeDutyCycle(rgb[0])
+#   GREEN.ChangeDutyCycle(rgb[1])
+#   BLUE.ChangeDutyCycle(rgb[2])
+
 if __name__ == '__main__':
   while cont <= 2 : # Se itera mientras cont < 2 (2 = num cubos -1)
     # Se realiza una captura con la cámara y se busca un cubo.
     captureAndFind()
     print "##############################"
   arduino.close()
+  GPIO.cleanup()
