@@ -8,7 +8,7 @@ import numpy as np
 import cv2
 from math import atan, degrees , sqrt, pow
 import serial
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 
 ########## Variables globales #################
 arduino = serial.Serial('/dev/ttyACM0', 9600)
@@ -51,21 +51,21 @@ blue = 18
 green = 27 #Pin 27 en B+, 21 en B.
 red = 17
 
-# Configuración GPIO.
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-GPIO.setup(red, GPIO.OUT)
-GPIO.setup(green, GPIO.OUT)
-GPIO.setup(blue, GPIO.OUT)
+# # Configuración GPIO.
+# GPIO.setmode(GPIO.BCM)
+# GPIO.setwarnings(False)
+# GPIO.setup(red, GPIO.OUT)
+# GPIO.setup(green, GPIO.OUT)
+# GPIO.setup(blue, GPIO.OUT)
 
-# Configuración de colores usando PWM por software. Control individual del
-# brillo de cada color.
-RED = GPIO.PWM(red, 100)
-GREEN = GPIO.PWM(green, 100)
-BLUE = GPIO.PWM(blue, 100)
-RED.start(100)
-GREEN.start(100)
-BLUE.start(100)
+# # Configuración de colores usando PWM por software. Control individual del
+# # brillo de cada color.
+# RED = GPIO.PWM(red, 100)
+# GREEN = GPIO.PWM(green, 100)
+# BLUE = GPIO.PWM(blue, 100)
+# RED.start(100)
+# GREEN.start(100)
+# BLUE.start(100)
 
 ######## Definición de funciones ##################
 
@@ -273,7 +273,7 @@ def waitForArduino():
   arduinoState = ''
   while wait :
     arduinoState = arduino.readLine()
-    if arduinoState == 'terminado\n'
+    if arduinoState == 'terminado\n':
       wait = False
 
 # Función que limpia las variables globales que se reutilizan en el
