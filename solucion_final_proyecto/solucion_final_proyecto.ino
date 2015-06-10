@@ -1,93 +1,83 @@
-  #include <Servo.h>
-  #include <math.h>
+#include <Servo.h>
+#include <math.h>
 
-  #define pinLED1 13
-  #define pinLED2 A0
-  #define pinLED3 2
+#define pinLED1 13
+#define pinLED2 A0
+#define pinLED3 2
 
-  #define CNY_Pin1 1
-  #define CNY_Pin2 2
+#define CNY_Pin1 1
+#define CNY_Pin2 2
 
-  #define pinMotor1 3
-  #define pinMotor2 4
-  #define pinMotor3 5
-  #define pinMotor4 6
+#define pinMotor1 3
+#define pinMotor2 4
+#define pinMotor3 5
+#define pinMotor4 6
 
+//LDRs
+const int LDR1 = 3, LDR2 = 4, LDR3 = 5;
+double umbral = 2.5;
+double lecturaLDR1 = 0, lecturaLDR2 = 0, lecturaLDR3 = 0;
 
-  //LDRs
-  int LDR1 = 3, LDR2 = 4, LDR3 = 5;
-  int valorLDR1 = 0, valorLDR2 = 0, valorLDR3 = 0;
-  int umbral = 800, umbral2 = 600, umbral3 = 800;
-  int lecturaLDR1 = 0, lecturaLDR2 = 0, lecturaLDR3 = 0;
+//motor paso a paso
+const int period = 2; // 2 ms cada paso
 
-  //motor paso a paso
-  const int period = 2; // 2 ms cada paso
+//CNYs
+int lecturaCNY1 = 0, lecturaCNY2 = 0;
 
-  //CNYs
-  int Valor_CNY1 = 0, Valor_CNY2 = 0;
-  int lecturaCNY1 = 0, lecturaCNY2 = 0;
+//Contadores para las caras de los cubos
+int caras_analizadas = 0, negras = 0;
 
-  //Contadores para las caras de los cubos
-  int caras_analizadas = 0, negras = 0, negras2 = 0, negras3 = 0, total_negras = 0;
+//Comunicación
+double x = 0.0, y = 0.0, angulo = 0.0;
+boolean varX = false, varY = false, varAnguloDecimal = false, colorCaraSuperior = false;
+String auxiliar = "", colorSuperior = "";
+char letra;
 
-  //Comunicación
-  double x = 0.0, y = 0.0, angulo = 0.0, decimal = 0.0;
-  boolean varX = false, varY = false, varAnguloDecimal = false, colorCaraSuperior = false;
-  String auxiliar = "", colorSuperior = "";
-  char letra;
+//Servomotores
+Servo myservo1, myservo2, myservo3, myservo4, myservo5, myservo6;
 
-  //Servomotores
-  Servo myservo1, myservo2, myservo3, myservo4, myservo5, myservo6;
+//Variables para el cálculo de la cinemática inversa
+double cabeceo = 90 - 20.8456;// angulo en grados
+double longitud_muneca = 80.5, longitud_brazo = 90, longitud_antebrazo = 90, altura_hombro = 64.23;
+double alfa, beta, gamma;
+double angulo_brazo, angulo_antebrazo, angulo_muneca;
+double x_cuadrado, y_cuadrado, giro, modulo, x_prima, y_prima, afx, afy, ladoA, ladoB, hipotenusa, operacion_beta, operacion_gamma;
 
-  //Variables para el cálculo de la cinemática inversa
-  double cabeceo = 90 - 20.8456;// angulo en grados
-  double longitud_muneca = 80.5, longitud_brazo = 90, longitud_antebrazo = 90, altura_hombro = 64.23;
-  double alfa, beta, gamma;
-  double angulo_brazo, angulo_antebrazo, angulo_muneca;
-  double x_cuadrado, y_cuadrado, giro, modulo, x_prima, y_prima, afx, afy, ladoA, ladoB, hipotenusa, operacion_beta, operacion_gamma;
+int estado_pinza = 0; // el 0 está abierto y el 1 estará la pinza cerrada
 
-  int estado_pinza = 0; // el 0 está abierto y el 1 estará la pinza cerrada
+void setup() {
+  Serial.begin(9600);
 
-  void setup() {
+  pinMode(pinLED1,OUTPUT);
+  digitalWrite(pinLED1,LOW);
+  pinMode(pinLED2, OUTPUT);
+  digitalWrite(pinLED2,LOW);
+  pinMode(pinLED3, OUTPUT);
+  digitalWrite(pinLED3,LOW);
 
-   Serial.begin(9600);
+  pinMode(pinMotor1, OUTPUT);
+  pinMode(pinMotor2, OUTPUT);
+  pinMode(pinMotor3, OUTPUT);
+  pinMode(pinMotor4, OUTPUT);
 
-   pinMode(pinLED1,OUTPUT);
-   digitalWrite(pinLED1,LOW);
+  myservo1.attach(7); //servo del soporte giratorio! base
+  myservo2.attach(8); //hombro
+  myservo3.attach(9); //codo...sube o baja el brazo
+  myservo4.attach(10); ///muñeca vertical
+  myservo5.attach(11); //muñeca horizontal - mano
+  myservo6.attach(12); //pinza
 
-   pinMode(pinLED2, OUTPUT);
-   digitalWrite(pinLED2,LOW);
-
-   pinMode(pinLED3, OUTPUT);
-   digitalWrite(pinLED3,LOW);
-
-   pinMode(pinMotor1, OUTPUT);
-   pinMode(pinMotor2, OUTPUT);
-   pinMode(pinMotor3, OUTPUT);
-   pinMode(pinMotor4, OUTPUT);
-
-   myservo1.attach(7); //servo del soporte giratorio! base
-   myservo2.attach(8); //hombro
-   myservo3.attach(9); //codo...sube o baja el brazo
-   myservo4.attach(10); ///muñeca vertical
-   myservo5.attach(11); //muñeca horizontal - mano
-   myservo6.attach(12); //pinza
-
-   calibrar_pinza();
-
+  calibrar_pinza();
+  reposo();
+  delay(1000);
 }
 
 void loop() {
-
-  reposo();
-  delay(1000);
-  abrir_pinza();
-  delay(1000);
-
-  //Se inicia la comunicación y se convierte el valor leído a double (o float en este caso, puesto que no existe función toDouble() de String), para después pasarlo a la función mover_brazo
+// Se inicia la comunicación y se convierte el valor leído a double
+// (o float en este caso, puesto que no existe función toDouble() de
+// String), para después pasarlo a la función mover_brazo
   if(Serial.available()){
     String lecturaSerie = Serial.readString();
-    while(lecturaSerie == "") Serial.println("espero");
     auxiliar = "";
     colorCaraSuperior = false;
     varAnguloDecimal = false;
@@ -95,91 +85,87 @@ void loop() {
     varY = false;
 
     for (int i = 0; i < lecturaSerie.length();i++){
-
       if(!colorCaraSuperior){
-           letra = lecturaSerie.charAt(i);
-              if(letra !=','){
-                auxiliar += letra;
-            }else{
-                colorCaraSuperior = true;
-                colorSuperior = auxiliar;
-                auxiliar = "";}
+        letra = lecturaSerie.charAt(i);
+        if(letra !=','){
+          auxiliar += letra;
+        }else{
+          colorCaraSuperior = true;
+          colorSuperior = auxiliar;
+          auxiliar = "";
+        }
+      }else if (!varAnguloDecimal){
+        letra = lecturaSerie.charAt(i);
+        if(letra !=','){
+          auxiliar += letra;
+        }else{
+          varAnguloDecimal = true;
+          angulo = auxiliar.toFloat();
+          auxiliar = "";
+        }
+      }else if(!varX){
+        letra = lecturaSerie.charAt(i);
+        if(letra !=','){
+          auxiliar += letra;
+        }else{
+          varX = true;
+          x = auxiliar.toFloat();
+          auxiliar = "";
+        }
+      }else if (!varY){
+        letra = lecturaSerie.charAt(i);
+        if(letra !=','){
+          auxiliar += letra;
+        }else{
+          varY = true;
+          y = auxiliar.toFloat();
+          auxiliar = "";
+        }
+      }//if-else
+    }//for
+    trabajo_brazo();
+  }//if-serial.available
+}//loop
 
-       } else if (!varAnguloDecimal){
-            letra = lecturaSerie.charAt(i);
-              if(letra !=','){
-                auxiliar += letra;
-              }else{
-                varAnguloDecimal = true;
-                decimal = auxiliar.toFloat();
-                angulo += (decimal / 100.0);
-                auxiliar = "";}
-
-        } else if(!varX){
-            letra = lecturaSerie.charAt(i);
-              if(letra !=','){
-                auxiliar += letra;
-            }else{
-                varX = true;
-                x = auxiliar.toFloat();
-                auxiliar = "";}
-
-        } else if (!varY){
-            letra = lecturaSerie.charAt(i);
-              if(letra !=','){
-                auxiliar += letra;
-              }else{
-                varY = true;
-                y = auxiliar.toFloat();
-                auxiliar = "";}
-      }
-    }
-  }
-
+void trabajo_brazo(){
   mover_brazo(x,y,-7.0); //Se le manda la x e y recibidas desde la Raspberry
   delay(1000);
-
   cerrar_pinza();
   delay(1000);
   subir_brazo();
   delay(1000);
+  cubeta2();//LINEA DE PRUEBA
 
-
-
-    cubeta2();
-    delay(1000);
-
-    abrir_pinza();
-    delay(1000);
   /*
+  plataforma();
+  delay(1000);
+  abrir_pinza();
+  delay(1000);
+  subir_brazo();
+  delay(1000);
+
   for(int i = 0; i<=3;i++){
-    lecturaCNY1 = lectura_CNY1();
+    lecturaCNY1 = lectura_CNY(CNY_Pin1);
     if(lecturaCNY1 > 300){
-      Serial.println("Cara negra detectada por CNY plataforma");
       negras++;
-      caras_analizadas++;
     }
+    caras_analizadas++;
     mover_motor();
   }
-
   delay(30);
 
-  lecturaCNY2 = lectura_CNY2();
-    if(lecturaCNY2 > 300){
-      Serial.println("Cara negra detectada por CNY de abajo");
-      negras2 = 1;
-      caras_analizadas++;
-    }
-
-
-  if(colorSuperior == "Negro" || colorSuperior == "negro"){
-    caras_analizadas++;
-    negras3 = 1;
+  lecturaCNY2 = lectura_CNY(CNY_Pin2);
+  if(lecturaCNY2 > 300){
+    negras++;
   }
+  caras_analizadas++;
 
-  total_negras = negras + negras2 + negras3;
+  if(colorSuperior < 100){
+    negras++;
+  }
+  caras_analizadas++;
 
-  /*if(total_negras == 0){
+  /*if(negras == 0){
     plataforma();
     delay(1000);
 
@@ -190,21 +176,8 @@ void loop() {
     delay(1000);
 
     cubeta1();
-    delay(1000);
 
-    abrir_pinza();
-    delay(1000);
-
-    lecturaLDR1 = lectura_LDR1();
-      if(lecturaLDR1 < umbral){
-        digitalWrite(pinLED1, HIGH);
-      } else {
-        digitalWrite(pinLED1,LOW);
-      }
-
-    subir_brazo();
-
-  } else if(total_negras == 1){
+  }else if(negras == 1){
 
     plataforma();
     delay(1000);
@@ -216,21 +189,8 @@ void loop() {
     delay(1000);
 
     cubeta2();
-    delay(1000);
 
-    abrir_pinza();
-    delay(1000);
-
-    lecturaLDR2 = lectura_LDR2();
-      if(lecturaLDR2 < umbral2){
-        digitalWrite(pinLED2, HIGH);
-      } else {
-        digitalWrite(pinLED2,LOW);
-      }
-
-    subir_brazo();
-
-  } else if(total_negras == 2){
+  }else if(negras == 2){
 
     plataforma();
     delay(1000);
@@ -242,73 +202,42 @@ void loop() {
     delay(1000);
 
     cubeta3();
-    delay(1000);
-
-    abrir_pinza();
-    delay(1000);
-
-    lecturaLDR3 = lectura_LDR3();
-      if(lecturaLDR3 < umbral3){
-        digitalWrite(pinLED3, HIGH);
-      } else {
-        digitalWrite(pinLED3,LOW);
-      }
-
-    subir_brazo();
   } */
-    Serial.write("terminado\n"); //Si no funcionase, cambiar por Serial.println
 
-    /*
-     lecturaLDR1 = lectura_LDR1();
-      if(lecturaLDR1 < umbral){
-        digitalWrite(pinLED1, HIGH);
-      } else {
-        digitalWrite(pinLED1,LOW);
-      }
+  lecturaLDR1 = lectura_LDR(LDR1);
+  if(lecturaLDR1 > umbral){
+    digitalWrite(pinLED1, HIGH);
+  } else {
+    digitalWrite(pinLED1,LOW);
+  }
 
-       lecturaLDR2 = lectura_LDR2();
-      if(lecturaLDR2 < umbral2){
-        digitalWrite(pinLED2, HIGH);
-      } else {
-        digitalWrite(pinLED2,LOW);
-      }
+  lecturaLDR2 = lectura_LDR(LDR2);
+  if(lecturaLDR2 > umbral){
+    digitalWrite(pinLED2, HIGH);
+  } else {
+    digitalWrite(pinLED2,LOW);
+  }
 
-       lecturaLDR3 = lectura_LDR3();
-      if(lecturaLDR3 < umbral3){
-        digitalWrite(pinLED3, HIGH);
-      } else {
-        digitalWrite(pinLED3,LOW);
-      }*/
-}
+  lecturaLDR3 = lectura_LDR(LDR3);
+  if(lecturaLDR3 > umbral){
+    digitalWrite(pinLED3, HIGH);
+  } else {
+    digitalWrite(pinLED3,LOW);
+  }
 
-int lectura_LDR1(){
-
-  valorLDR1 = analogRead(LDR1);
-  return valorLDR1;
-}
-
-int lectura_LDR2(){
-
-  valorLDR2 = analogRead(LDR2);
-  return valorLDR2;
-}
-
-int lectura_LDR3(){
-   valorLDR3 = analogRead(LDR3);
-  return valorLDR3;
-}
-
-int lectura_CNY1(){
-
- Valor_CNY1 = analogRead(CNY_Pin1);
- return Valor_CNY1;
+  //Serial.write("terminado\n"); //Si no funcionase, cambiar por Serial.println
 }
 
 
-int lectura_CNY2(){
+double lectura_LDR(const int pin){
+  double valorLDR = analogRead(pin);
+  valorLDR *= 0.0049;
+  return valorLDR;
+}
 
- Valor_CNY2 = analogRead(CNY_Pin2);
- return Valor_CNY2;
+int lectura_CNY(const int pin){
+  int Valor_CNY = analogRead(pin);
+  return Valor_CNY;
 }
 
 void mover_motor(){
@@ -318,9 +247,7 @@ void mover_motor(){
    step3();
    step4();
   }
-
 }
-
 
 void mover_brazo(double x, double y, double z){
   if(x > 0){ x+=30.0; y-=23;}
@@ -333,7 +260,12 @@ void cubeta1(){
   mapeo_servo4(130);
   mapeo_servo2(84);
   mapeo_servo3(50);
-  digitalWrite(pinLED1,HIGH);
+  delay(1000);
+  abrir_pinza();
+  delay(1000);
+  mapeo_servo2(100);
+  delay(1000);
+  reposo();
 }
 
 void cubeta2(){
@@ -341,7 +273,12 @@ void cubeta2(){
   mapeo_servo4(130);
   mapeo_servo2(84);
   mapeo_servo3(50);
-  digitalWrite(pinLED2,HIGH);
+  delay(1000);
+  abrir_pinza();
+  delay(1000);
+  mapeo_servo2(100);
+  delay(1000);
+  reposo();
 }
 
 void cubeta3(){
@@ -350,7 +287,12 @@ void cubeta3(){
   mapeo_servo4(130);
   mapeo_servo2(84);
   mapeo_servo3(50);
-  digitalWrite(pinLED3,HIGH);
+  delay(1000);
+  abrir_pinza();
+  delay(1000);
+  mapeo_servo2(100);
+  delay(1000);
+  reposo();
 }
 
 void plataforma(){
