@@ -76,10 +76,30 @@ void loop() {
 // Se inicia la comunicación y se convierte el valor leído a double
 // (o float en este caso, puesto que no existe función toDouble() de
 // String), para después pasarlo a la función mover_brazo
+  Serial.print("CNY abajo: ");
+  Serial.println(lectura_CNY(CNY_Pin2));
   mover_motor();
   stopMotor();//*/
   delay(50);
   Serial.println(lectura_CNY(CNY_Pin1));
+  mover_motor();
+  stopMotor();//*/
+  delay(50);
+  Serial.println(lectura_CNY(CNY_Pin1));
+  mover_motor();
+  stopMotor();//*/
+  delay(50);
+  Serial.println(lectura_CNY(CNY_Pin1));
+  mover_motor();
+  stopMotor();//*/
+  delay(50);
+  Serial.println(lectura_CNY(CNY_Pin1));
+  mover_motor_inv();
+  mover_motor_inv();
+  mover_motor_inv();
+  mover_motor_inv();
+  stopMotor();//*/
+  delay(50);
   /*if(Serial.available()){
     String lecturaSerie = Serial.readString();
     auxiliar = "";
