@@ -11,7 +11,7 @@ import serial
 #import RPi.GPIO as GPIO
 
 ########## Variables globales #################
-arduino = serial.Serial('/dev/ttyACM0', 9600)
+arduino = serial.Serial('/dev/ttyACM4', 9600)
 workzone = []
 workzone2 = []
 square2 = []
@@ -259,11 +259,12 @@ def getDataString():
   raspiData = raspiData + str(round(xFromArm))
   raspiData = raspiData + ","
   raspiData = raspiData + str(round(yFromArm))
-  print raspiData
 
 # Función que obtiene la información a enviar a Arduino y la envía.
 def sendDataToArduino():
+  global raspiData
   getDataString()
+  print raspiData
   arduino.write(raspiData)
 
 # Función que espera hasta que Arduino termine su función y envíe un mensaje
@@ -272,7 +273,7 @@ def waitForArduino():
   wait = True
   arduinoState = ''
   while wait :
-    arduinoState = arduino.readLine()
+    arduinoState = arduino.readline()
     if arduinoState == 'terminado\n':
       wait = False
 
@@ -337,7 +338,8 @@ def captureAndFind():
   # Se pinta el lado con el que se calcula el ángulo de la muñeca.
   cv2.line(img, (sorted_cube[0][0],sorted_cube[0][1]), (sorted_cube[1][0],sorted_cube[1][1]), YELLOW, 1)
 
-  getDataString()
+  sendDataToArduino()
+  waitForArduino()
 
   cv2.imshow('Cube detection', img)
   ch = 0xFF & cv2.waitKey()
@@ -355,6 +357,7 @@ def captureAndFind():
 #   BLUE.ChangeDutyCycle(rgb[2])
 
 if __name__ == '__main__':
+  clean()
   while cont <= 2 : # Se itera mientras cont < 2 (2 = num cubos -1)
     # Se realiza una captura con la cámara y se busca un cubo.
     captureAndFind()
