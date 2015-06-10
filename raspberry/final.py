@@ -259,12 +259,12 @@ def getDataString():
   raspiData = raspiData + str(round(xFromArm))
   raspiData = raspiData + ","
   raspiData = raspiData + str(round(yFromArm))
+  raspiData = raspiData + ";"
 
 # Función que obtiene la información a enviar a Arduino y la envía.
 def sendDataToArduino():
   global raspiData
   getDataString()
-  print raspiData
   arduino.write(raspiData)
 
 # Función que espera hasta que Arduino termine su función y envíe un mensaje
@@ -323,27 +323,16 @@ def captureAndFind():
     print "El nuevo origen de coordenadas sera [",convertPixelsToMillimetres(bottomside_center_worzone[0]),",",convertPixelsToMillimetres(bottomside_center_worzone[1]),"] mm"
     print "Utilizando ese punto como nuevo SR."
     workzone2.append(workzone)
-  cv2.drawContours(img, workzone2, -1, GREEN, 2)
   findSquares(img)
   getColor(img)
   square2.append(square)
-  cv2.drawContours(img, square2, -1, RED, 3) # Se pinta el cubo.
-  # Se pinta el eje de referencia.
-  cv2.line(img, (topside_center_workzone[0],topside_center_workzone[1]), (bottomside_center_worzone[0],bottomside_center_worzone[1]), BLUE, 1)
   changeSR()
   getWristAngle()
   xFromArm = getXFromArm()
   yFromArm = getYFromArm()
   print "El cubo se encuentra en la posición [",xFromArm,",",yFromArm,"] mm respecto al brazo"
-  # Se pinta el lado con el que se calcula el ángulo de la muñeca.
-  cv2.line(img, (sorted_cube[0][0],sorted_cube[0][1]), (sorted_cube[1][0],sorted_cube[1][1]), YELLOW, 1)
-
   sendDataToArduino()
   waitForArduino()
-
-  cv2.imshow('Cube detection', img)
-  ch = 0xFF & cv2.waitKey()
-  cv2.destroyAllWindows()
   clean()
   cam.release()
 
@@ -361,6 +350,6 @@ if __name__ == '__main__':
   while cont <= 2 : # Se itera mientras cont < 2 (2 = num cubos -1)
     # Se realiza una captura con la cámara y se busca un cubo.
     captureAndFind()
-    print "##############################"
+    print "#################################################"
   arduino.close()
-  GPIO.cleanup()
+  #GPIO.cleanup()
