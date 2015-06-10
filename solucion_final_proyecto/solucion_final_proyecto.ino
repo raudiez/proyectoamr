@@ -19,7 +19,7 @@ double umbral = 2.5;
 double lecturaLDR1 = 0, lecturaLDR2 = 0, lecturaLDR3 = 0;
 
 //motor paso a paso
-const int period = 2; // 2 ms cada paso
+const int period = 8; // 2 ms cada paso
 
 //CNYs
 int lecturaCNY1 = 0, lecturaCNY2 = 0;
@@ -59,7 +59,7 @@ void setup() {
   pinMode(pinMotor2, OUTPUT);
   pinMode(pinMotor3, OUTPUT);
   pinMode(pinMotor4, OUTPUT);
-
+/*
   myservo1.attach(7); //servo del soporte giratorio! base
   myservo2.attach(8); //hombro
   myservo3.attach(9); //codo...sube o baja el brazo
@@ -69,14 +69,18 @@ void setup() {
 
   calibrar_pinza();
   reposo();
-  delay(1000);
+  delay(1000);*/
 }
 
 void loop() {
 // Se inicia la comunicación y se convierte el valor leído a double
 // (o float en este caso, puesto que no existe función toDouble() de
 // String), para después pasarlo a la función mover_brazo
-  if(Serial.available()){
+  mover_motor();
+  stopMotor();//*/
+  delay(50);
+  Serial.println(lectura_CNY(CNY_Pin1));
+  /*if(Serial.available()){
     String lecturaSerie = Serial.readString();
     auxiliar = "";
     colorCaraSuperior = false;
@@ -114,7 +118,7 @@ void loop() {
         }
       }else if (!varY){
         letra = lecturaSerie.charAt(i);
-        if(letra !=','){
+        if(letra !=';'){
           auxiliar += letra;
         }else{
           varY = true;
@@ -123,12 +127,12 @@ void loop() {
         }
       }//if-else
     }//for
-    trabajo_brazo();
-  }//if-serial.available
+    //trabajo_brazo();
+  }//if-serial.available*/
 }//loop
 
 void trabajo_brazo(){
-  mover_brazo(x,y,-7.0); //Se le manda la x e y recibidas desde la Raspberry
+  mover_brazo(x,y,-5.0); //Se le manda la x e y recibidas desde la Raspberry
   delay(1000);
   cerrar_pinza();
   delay(1000);
@@ -204,6 +208,11 @@ void trabajo_brazo(){
     cubeta3();
   } */
 
+  Serial.write("terminado\n"); //Si no funcionase, cambiar por Serial.println
+}
+
+
+void comprueba_LDRs(){
   lecturaLDR1 = lectura_LDR(LDR1);
   if(lecturaLDR1 > umbral){
     digitalWrite(pinLED1, HIGH);
@@ -224,10 +233,7 @@ void trabajo_brazo(){
   } else {
     digitalWrite(pinLED3,LOW);
   }
-
-  //Serial.write("terminado\n"); //Si no funcionase, cambiar por Serial.println
 }
-
 
 double lectura_LDR(const int pin){
   double valorLDR = analogRead(pin);
@@ -241,11 +247,20 @@ int lectura_CNY(const int pin){
 }
 
 void mover_motor(){
- for (int i = 0; i < 512; i++){
+ for (int i = 0; i < 128; i++){
    step1();
    step2();
    step3();
    step4();
+  }
+}
+
+void mover_motor_inv(){
+ for (int i = 0; i < 128; i++){
+   step4();
+   step3();
+   step2();
+   step1();
   }
 }
 
@@ -263,6 +278,7 @@ void cubeta1(){
   delay(1000);
   abrir_pinza();
   delay(1000);
+  comprueba_LDRs();
   mapeo_servo2(100);
   delay(1000);
   reposo();
@@ -276,6 +292,7 @@ void cubeta2(){
   delay(1000);
   abrir_pinza();
   delay(1000);
+  comprueba_LDRs();
   mapeo_servo2(100);
   delay(1000);
   reposo();
@@ -290,6 +307,7 @@ void cubeta3(){
   delay(1000);
   abrir_pinza();
   delay(1000);
+  comprueba_LDRs();
   mapeo_servo2(100);
   delay(1000);
   reposo();
