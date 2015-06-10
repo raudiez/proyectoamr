@@ -19,7 +19,7 @@ double umbral = 2.5;
 double lecturaLDR1 = 0, lecturaLDR2 = 0, lecturaLDR3 = 0;
 
 //motor paso a paso
-const int period = 8; // 2 ms cada paso
+const int period = 4; // 2 ms cada paso
 
 //CNYs
 int lecturaCNY1 = 0, lecturaCNY2 = 0;
@@ -30,7 +30,8 @@ int caras_analizadas = 0, negras = 0;
 //Comunicación
 double x = 0.0, y = 0.0, angulo = 0.0;
 boolean varX = false, varY = false, varAnguloDecimal = false, colorCaraSuperior = false;
-String auxiliar = "", colorSuperior = "";
+String auxiliar = "";
+int colorSuperior = 0;
 char letra;
 
 //Servomotores
@@ -59,7 +60,7 @@ void setup() {
   pinMode(pinMotor2, OUTPUT);
   pinMode(pinMotor3, OUTPUT);
   pinMode(pinMotor4, OUTPUT);
-/*
+
   myservo1.attach(7); //servo del soporte giratorio! base
   myservo2.attach(8); //hombro
   myservo3.attach(9); //codo...sube o baja el brazo
@@ -69,38 +70,41 @@ void setup() {
 
   calibrar_pinza();
   reposo();
-  delay(1000);*/
+  delay(1000);
 }
 
 void loop() {
 // Se inicia la comunicación y se convierte el valor leído a double
 // (o float en este caso, puesto que no existe función toDouble() de
 // String), para después pasarlo a la función mover_brazo
-  Serial.print("CNY abajo: ");
+
+  /*//PRUEBAS DE MOVIMIENTO A PLATAFORMA
+  plataforma2();
+  delay(500);
+  subir_brazo();// FIN PRUEBAS DE MOVIMIENTO A PLATAFORMA */
+  /*// PRUEBA DE CNYS
+  Serial.print("CNY abajo :");
   Serial.println(lectura_CNY(CNY_Pin2));
+  Serial.println(lectura_CNY(CNY_Pin1));
   mover_motor();
-  stopMotor();//*/
+  stopMotor();
   delay(50);
   Serial.println(lectura_CNY(CNY_Pin1));
   mover_motor();
-  stopMotor();//*/
+  stopMotor();
   delay(50);
   Serial.println(lectura_CNY(CNY_Pin1));
   mover_motor();
-  stopMotor();//*/
+  stopMotor();
   delay(50);
   Serial.println(lectura_CNY(CNY_Pin1));
   mover_motor();
-  stopMotor();//*/
+  stopMotor();
   delay(50);
-  Serial.println(lectura_CNY(CNY_Pin1));
-  mover_motor_inv();
-  mover_motor_inv();
-  mover_motor_inv();
-  mover_motor_inv();
-  stopMotor();//*/
-  delay(50);
-  /*if(Serial.available()){
+  vuelve_motor();//FIN PRUEBA DE CNYS*/
+
+
+  if(Serial.available()){
     String lecturaSerie = Serial.readString();
     auxiliar = "";
     colorCaraSuperior = false;
@@ -115,7 +119,7 @@ void loop() {
           auxiliar += letra;
         }else{
           colorCaraSuperior = true;
-          colorSuperior = auxiliar;
+          colorSuperior = auxiliar.toInt();
           auxiliar = "";
         }
       }else if (!varAnguloDecimal){
@@ -147,90 +151,113 @@ void loop() {
         }
       }//if-else
     }//for
-    //trabajo_brazo();
+    trabajo_brazo();
   }//if-serial.available*/
+  comprueba_LDRs();
 }//loop
 
 void trabajo_brazo(){
-  mover_brazo(x,y,-5.0); //Se le manda la x e y recibidas desde la Raspberry
-  delay(1000);
+  mover_brazo(x,y,-4.0); //Se le manda la x e y recibidas desde la Raspberry
+  delay(500);
   cerrar_pinza();
-  delay(1000);
+  delay(500);
   subir_brazo();
-  delay(1000);
-  cubeta2();//LINEA DE PRUEBA
 
-  /*
-  plataforma();
-  delay(1000);
+  // LINEAS DE PRUEBA DE TRABAJO BRAZO SIN LECTURAS DE CNY
+  plataforma2();
+  delay(500);
   abrir_pinza();
-  delay(1000);
+  delay(500);
   subir_brazo();
-  delay(1000);
-
+  for(int i = 0; i<=3;i++){
+    mover_motor();
+    stopMotor();
+    delay(50);
+  }
+  delay(30);
+  vuelve_motor();
+  plataforma();
+  delay(500);
+  cerrar_pinza();
+  delay(500);
+  subir_brazo();
+  cubeta3();// FIN LINEAS DE PRUEBA*/
+/*
+  plataforma();
+  delay(500);
+  abrir_pinza();
+  delay(500);
+  subir_brazo();
   for(int i = 0; i<=3;i++){
     lecturaCNY1 = lectura_CNY(CNY_Pin1);
-    if(lecturaCNY1 > 300){
+    if(lecturaCNY1 > 600){
       negras++;
     }
     caras_analizadas++;
     mover_motor();
+    stopMotor();
+    delay(50);
   }
   delay(30);
+  vuelve_motor();
 
   lecturaCNY2 = lectura_CNY(CNY_Pin2);
-  if(lecturaCNY2 > 300){
+  if(lecturaCNY2 > 600){
     negras++;
   }
   caras_analizadas++;
-
   if(colorSuperior < 100){
     negras++;
   }
   caras_analizadas++;
-
-  /*if(negras == 0){
-    plataforma();
-    delay(1000);
-
-    cerrar_pinza();
-    delay(1000);
-
-    subir_brazo();
-    delay(1000);
-
+  plataforma();
+  delay(500);
+  cerrar_pinza();
+  delay(500);
+  subir_brazo();
+  if(negras == 0){
     cubeta1();
-
   }else if(negras == 1){
-
-    plataforma();
-    delay(1000);
-
-    cerrar_pinza();
-    delay(1000);
-
-    subir_brazo();
-    delay(1000);
-
     cubeta2();
-
   }else if(negras == 2){
-
-    plataforma();
-    delay(1000);
-
-    cerrar_pinza();
-    delay(1000);
-
-    subir_brazo();
-    delay(1000);
-
     cubeta3();
-  } */
+  } //*/
 
   Serial.write("terminado\n"); //Si no funcionase, cambiar por Serial.println
 }
 
+void vuelve_motor(){
+  mover_motor_inv();
+  stopMotor();
+  delay(50);
+  mover_motor_inv();
+  stopMotor();
+  delay(50);
+  mover_motor_inv();
+  stopMotor();
+  delay(50);
+  mover_motor_inv();
+  stopMotor();
+  delay(50);
+}
+
+void mover_motor(){
+ for (int i = 0; i < 128; i++){
+   step1();
+   step2();
+   step3();
+   step4();
+  }
+}
+
+void mover_motor_inv(){
+ for (int i = 0; i < 128; i++){
+   step4();
+   step3();
+   step2();
+   step1();
+  }
+}
 
 void comprueba_LDRs(){
   lecturaLDR1 = lectura_LDR(LDR1);
@@ -266,24 +293,6 @@ int lectura_CNY(const int pin){
   return Valor_CNY;
 }
 
-void mover_motor(){
- for (int i = 0; i < 128; i++){
-   step1();
-   step2();
-   step3();
-   step4();
-  }
-}
-
-void mover_motor_inv(){
- for (int i = 0; i < 128; i++){
-   step4();
-   step3();
-   step2();
-   step1();
-  }
-}
-
 void mover_brazo(double x, double y, double z){
   if(x > 0){ x+=30.0; y-=23;}
   calcula_angulos(x,y+50.0,75.0+z);
@@ -297,9 +306,9 @@ void cubeta1(){
   mapeo_servo3(50);
   delay(1000);
   abrir_pinza();
-  delay(1000);
+  delay(500);
   comprueba_LDRs();
-  mapeo_servo2(100);
+  mapeo_servo2(120);
   delay(1000);
   reposo();
 }
@@ -311,9 +320,9 @@ void cubeta2(){
   mapeo_servo3(50);
   delay(1000);
   abrir_pinza();
-  delay(1000);
+  delay(500);
   comprueba_LDRs();
-  mapeo_servo2(100);
+  mapeo_servo2(120);
   delay(1000);
   reposo();
 }
@@ -326,19 +335,27 @@ void cubeta3(){
   mapeo_servo3(50);
   delay(1000);
   abrir_pinza();
-  delay(1000);
+  delay(500);
   comprueba_LDRs();
-  mapeo_servo2(100);
+  mapeo_servo2(120);
   delay(1000);
   reposo();
 }
 
 void plataforma(){
   myservo5.write(161);
-  myservo1.write(179);
+  myservo1.write(180);
   mapeo_servo4(120);
   mapeo_servo2(97);
   mapeo_servo3(49);
+}
+
+void plataforma2(){
+  myservo5.write(161);
+  myservo1.write(180);
+  mapeo_servo4(115);
+  mapeo_servo2(99);
+  mapeo_servo3(54);
 }
 
 void subir_brazo(){
@@ -355,12 +372,12 @@ void mapeo_servo1(double angulo){
   if(angulonuevo >= anguloactual){
     for(int i=anguloactual;i<=angulonuevo;i++){
       myservo1.write(i);
-      delay(30);
+      delay(15);
     }
   }else{
     for(int i=anguloactual;i>=angulonuevo;i--){
       myservo1.write(i);
-      delay(30);
+      delay(15);
     }
   }
 }
@@ -371,12 +388,12 @@ void mapeo_servo2(double angulo){
   if(angulonuevo >= anguloactual){
   for(int i=anguloactual;i<=angulonuevo;i++){
       myservo2.write(i);
-      delay(30);
+      delay(15);
     }
   }else{
     for(int i=anguloactual;i>=angulonuevo;i--){
       myservo2.write(i);
-      delay(30);
+      delay(15);
     }
   }
 }
@@ -387,12 +404,12 @@ void mapeo_servo3(double angulo){
   if(angulonuevo >= anguloactual){
   for(int i=anguloactual;i<=angulonuevo;i++){
       myservo3.write(i);
-      delay(30);
+      delay(15);
     }
   }else{
     for(int i=anguloactual;i>=angulonuevo;i--){
       myservo3.write(i);
-      delay(30);
+      delay(15);
     }
   }
 }
@@ -403,12 +420,12 @@ void mapeo_servo4(double angulo){
   if(angulonuevo >= anguloactual){
   for(int i=anguloactual;i<=angulonuevo;i++){
       myservo4.write(i);
-      delay(30);
+      delay(15);
     }
   }else{
     for(int i=anguloactual;i>=angulonuevo;i--){
       myservo4.write(i);
-      delay(30);
+      delay(15);
     }
   }
 }
@@ -419,12 +436,12 @@ void mapeo_servo5(double angulo){
   if(angulonuevo >= anguloactual){
     for(int i=anguloactual;i<=angulonuevo;i++){
       myservo5.write(i);
-      delay(30);
+      delay(15);
     }
   }else{
     for(int i=anguloactual;i>=angulonuevo;i--){
       myservo5.write(i);
-      delay(30);
+      delay(15);
     }
   }
 }
@@ -499,10 +516,10 @@ void calcula_angulos(double x, double y, double z){
   mapeo_servo4(angulo_muneca+20);
   if (angulo_antebrazo <=38){
     mapeo_servo3(38);
-    mapeo_servo2(angulo_brazo-(38-angulo_antebrazo)+2);
+    mapeo_servo2(angulo_brazo-(38-angulo_antebrazo)+3);
   }else{
-    mapeo_servo3(angulo_antebrazo);
-    mapeo_servo2(angulo_brazo);
+    mapeo_servo3(angulo_antebrazo+1);
+    mapeo_servo2(angulo_brazo+1);
   }
 }
 
