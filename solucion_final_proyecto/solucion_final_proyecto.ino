@@ -4,18 +4,18 @@
   #define pinLED1 13
   #define pinLED2 A0
   #define pinLED3 2
-  
+
   #define CNY_Pin1 1
   #define CNY_Pin2 2
-  
+
   #define pinMotor1 3
   #define pinMotor2 4
   #define pinMotor3 5
-  #define pinMotor4 6 
+  #define pinMotor4 6
 
 
   //LDRs
-  int LDR1 = 3, LDR2 = 4, LDR3 = 5; 
+  int LDR1 = 3, LDR2 = 4, LDR3 = 5;
   int valorLDR1 = 0, valorLDR2 = 0, valorLDR3 = 0;
   int umbral = 800, umbral2 = 600, umbral3 = 800;
   int lecturaLDR1 = 0, lecturaLDR2 = 0, lecturaLDR3 = 0;
@@ -29,11 +29,11 @@
 
   //Contadores para las caras de los cubos
   int caras_analizadas = 0, negras = 0, negras2 = 0, negras3 = 0, total_negras = 0;
-  
+
   //Comunicación
   double x = 0.0, y = 0.0, angulo = 0.0, decimal = 0.0;
   boolean varX = false, varY = false, varAnguloDecimal = false, colorCaraSuperior = false;
-  String auxiliar = "", lecturaSerie, colorSuperior = "";
+  String auxiliar = "", colorSuperior = "";
   char letra;
 
   //Servomotores
@@ -57,42 +57,43 @@
 
    pinMode(pinLED2, OUTPUT);
    digitalWrite(pinLED2,LOW);
- 
+
    pinMode(pinLED3, OUTPUT);
    digitalWrite(pinLED3,LOW);
-  
+
    pinMode(pinMotor1, OUTPUT);
    pinMode(pinMotor2, OUTPUT);
    pinMode(pinMotor3, OUTPUT);
    pinMode(pinMotor4, OUTPUT);
- 
+
    myservo1.attach(7); //servo del soporte giratorio! base
    myservo2.attach(8); //hombro
    myservo3.attach(9); //codo...sube o baja el brazo
    myservo4.attach(10); ///muñeca vertical
    myservo5.attach(11); //muñeca horizontal - mano
    myservo6.attach(12); //pinza
- 
+
    calibrar_pinza();
 
 }
 
 void loop() {
-  
+
   reposo();
   delay(1000);
   abrir_pinza();
   delay(1000);
-  
+
   //Se inicia la comunicación y se convierte el valor leído a double (o float en este caso, puesto que no existe función toDouble() de String), para después pasarlo a la función mover_brazo
-  if(Serial.available() > 0){
-    lecturaSerie = Serial.readString();
+  if(Serial.available()){
+    String lecturaSerie = Serial.readString();
+    while(lecturaSerie == "") Serial.println("espero");
     auxiliar = "";
     colorCaraSuperior = false;
     varAnguloDecimal = false;
     varX = false;
-    varY = false; 
-   
+    varY = false;
+
     for (int i = 0; i < lecturaSerie.length();i++){
 
       if(!colorCaraSuperior){
@@ -113,7 +114,7 @@ void loop() {
                 decimal = auxiliar.toFloat();
                 angulo += (decimal / 100.0);
                 auxiliar = "";}
-   
+
         } else if(!varX){
             letra = lecturaSerie.charAt(i);
               if(letra !=','){
@@ -133,9 +134,9 @@ void loop() {
                 auxiliar = "";}
       }
     }
-  }  
+  }
 
-  mover_brazo(x,y,-4.0); //Se le manda la x e y recibidas desde la Raspberry
+  mover_brazo(x,y,-7.0); //Se le manda la x e y recibidas desde la Raspberry
   delay(1000);
 
   cerrar_pinza();
@@ -150,7 +151,7 @@ void loop() {
 
     abrir_pinza();
     delay(1000);
-  
+  /*
   for(int i = 0; i<=3;i++){
     lecturaCNY1 = lectura_CNY1();
     if(lecturaCNY1 > 300){
@@ -160,7 +161,7 @@ void loop() {
     }
     mover_motor();
   }
-  
+
   delay(30);
 
   lecturaCNY2 = lectura_CNY2();
@@ -169,8 +170,8 @@ void loop() {
       negras2 = 1;
       caras_analizadas++;
     }
-  
-  
+
+
   if(colorSuperior == "Negro" || colorSuperior == "negro"){
     caras_analizadas++;
     negras3 = 1;
@@ -202,7 +203,7 @@ void loop() {
       }
 
     subir_brazo();
-  
+
   } else if(total_negras == 1){
 
     plataforma();
@@ -228,7 +229,7 @@ void loop() {
       }
 
     subir_brazo();
-  
+
   } else if(total_negras == 2){
 
     plataforma();
@@ -254,9 +255,9 @@ void loop() {
       }
 
     subir_brazo();
-  }
-    Serial.write("terminado"); //Si no funcionase, cambiar por Serial.println
-    */
+  } */
+    Serial.write("terminado\n"); //Si no funcionase, cambiar por Serial.println
+
     /*
      lecturaLDR1 = lectura_LDR1();
       if(lecturaLDR1 < umbral){
@@ -264,14 +265,14 @@ void loop() {
       } else {
         digitalWrite(pinLED1,LOW);
       }
-      
+
        lecturaLDR2 = lectura_LDR2();
       if(lecturaLDR2 < umbral2){
         digitalWrite(pinLED2, HIGH);
       } else {
         digitalWrite(pinLED2,LOW);
       }
-      
+
        lecturaLDR3 = lectura_LDR3();
       if(lecturaLDR3 < umbral3){
         digitalWrite(pinLED3, HIGH);
@@ -283,7 +284,7 @@ void loop() {
 int lectura_LDR1(){
 
   valorLDR1 = analogRead(LDR1);
-  return valorLDR1; 
+  return valorLDR1;
 }
 
 int lectura_LDR2(){
@@ -298,7 +299,7 @@ int lectura_LDR3(){
 }
 
 int lectura_CNY1(){
-  
+
  Valor_CNY1 = analogRead(CNY_Pin1);
  return Valor_CNY1;
 }
