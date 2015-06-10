@@ -11,7 +11,7 @@ import serial
 #import RPi.GPIO as GPIO
 
 ########## Variables globales #################
-arduino = serial.Serial('/dev/ttyACM4', 9600)
+arduino = serial.Serial('/dev/ttyACM0', 9600)
 workzone = []
 workzone2 = []
 square2 = []
