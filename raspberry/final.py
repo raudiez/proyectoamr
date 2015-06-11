@@ -36,20 +36,19 @@ yFromArm = 0 # Y respercto al brazo robótico.
 yDistanceFromArm = 124.8 # Distancia desde el nuevo SR (0,0) al (0,0) del brazo, en mm.
 
 # Colores para pintar:
-RED=(0,0,255)
-BLUE=(255,0,0)
-CYAN=(255,150,0)
-GREEN=(0,255,0)
-YELLOW=(0,255,255)
-ORANGE=(0,150,255)
-WHITE=(255,255,255)
-BLACK=(0,0,0)
+RED=[255,0,0]
+BLUE=[0,0,255]
+CYAN=[0,150,255]
+GREEN=[0,255,0]
+YELLOW=[255,255,0]
+ORANGE=[255,150,0]
+WHITE=[255,255,255]
 
 ### LED RGB ###
 # Mapeo de pines del LED.
-blue = 18
+red = 18
 green = 27 #Pin 27 en B+, 21 en B.
-red = 17
+blue = 17
 
 # # Configuración GPIO.
 # GPIO.setmode(GPIO.BCM)
@@ -336,14 +335,15 @@ def captureAndFind():
   clean()
   cam.release()
 
-# Set a color by giving R, G, and B values of 0-255.
-# def setColor(rgb = []):
-#   print rgb
-#   # Convert 0-255 range to 0-100.
-#   rgb = [(abs(x-255) / 255.0) * 100 for x in rgb]
-#   RED.ChangeDutyCycle(rgb[0])
-#   GREEN.ChangeDutyCycle(rgb[1])
-#   BLUE.ChangeDutyCycle(rgb[2])
+# Función que enciende el LED RGB por el color dado en ese formato: [R,G,B]
+# De 0 a 255 (mín - máx).
+def setColor(rgb = []):
+  # Convierte 0-255 a 0-100, y cambia el valor al inverso en el rango 0-255,
+  # para utilizar un LED de ánodo común.
+  rgb = [(abs(x-255) / 255.0) * 100 for x in rgb]
+  RED.ChangeDutyCycle(rgb[0])
+  GREEN.ChangeDutyCycle(rgb[1])
+  BLUE.ChangeDutyCycle(rgb[2])
 
 if __name__ == '__main__':
   clean()
@@ -352,4 +352,4 @@ if __name__ == '__main__':
     captureAndFind()
     print "#################################################"
   arduino.close()
-  #GPIO.cleanup()
+  GPIO.cleanup()

@@ -48,7 +48,7 @@ def setColor(rgb = []):
 	BLUE.ChangeDutyCycle(rgb[2])
 
 try:
-	rgbled = [0,255,0]
+	rgbled = [255,0,0]
 	setColor(rgbled)
 	time.sleep(5)
 except (KeyboardInterrupt, SystemExit):
