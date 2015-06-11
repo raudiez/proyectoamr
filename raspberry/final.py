@@ -60,12 +60,12 @@ GPIO.setup(blue, GPIO.OUT)
 
 # Configuración de colores usando PWM por software. Control individual del
 # brillo de cada color.
-RED = GPIO.PWM(red, 100)
-GREEN = GPIO.PWM(green, 100)
-BLUE = GPIO.PWM(blue, 100)
-RED.start(100)
-GREEN.start(100)
-BLUE.start(100)
+REDPIN = GPIO.PWM(red, 100)
+GREENPIN = GPIO.PWM(green, 100)
+BLUEPIN = GPIO.PWM(blue, 100)
+REDPIN.start(100)
+GREENPIN.start(100)
+BLUEPIN.start(100)
 
 ######## Definición de funciones ##################
 
@@ -346,9 +346,9 @@ def setColor(rgb = []):
   # Convierte 0-255 a 0-100, y cambia el valor al inverso en el rango 0-255,
   # para utilizar un LED de ánodo común.
   rgb = [(abs(x-255) / 255.0) * 100 for x in rgb]
-  RED.ChangeDutyCycle(rgb[0])
-  GREEN.ChangeDutyCycle(rgb[1])
-  BLUE.ChangeDutyCycle(rgb[2])
+  REDPIN.ChangeDutyCycle(rgb[0])
+  GREENPIN.ChangeDutyCycle(rgb[1])
+  BLUEPIN.ChangeDutyCycle(rgb[2])
 
 if __name__ == '__main__':
   clean()
