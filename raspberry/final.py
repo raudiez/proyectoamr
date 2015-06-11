@@ -8,7 +8,8 @@ import numpy as np
 import cv2
 from math import atan, degrees , sqrt, pow
 import serial
-#import RPi.GPIO as GPIO
+import time
+import RPi.GPIO as GPIO
 
 ########## Variables globales #################
 arduino = serial.Serial('/dev/ttyACM0', 9600)
@@ -50,21 +51,21 @@ red = 18
 green = 27 #Pin 27 en B+, 21 en B.
 blue = 17
 
-# # Configuración GPIO.
-# GPIO.setmode(GPIO.BCM)
-# GPIO.setwarnings(False)
-# GPIO.setup(red, GPIO.OUT)
-# GPIO.setup(green, GPIO.OUT)
-# GPIO.setup(blue, GPIO.OUT)
+# Configuración GPIO.
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(red, GPIO.OUT)
+GPIO.setup(green, GPIO.OUT)
+GPIO.setup(blue, GPIO.OUT)
 
-# # Configuración de colores usando PWM por software. Control individual del
-# # brillo de cada color.
-# RED = GPIO.PWM(red, 100)
-# GREEN = GPIO.PWM(green, 100)
-# BLUE = GPIO.PWM(blue, 100)
-# RED.start(100)
-# GREEN.start(100)
-# BLUE.start(100)
+# Configuración de colores usando PWM por software. Control individual del
+# brillo de cada color.
+RED = GPIO.PWM(red, 100)
+GREEN = GPIO.PWM(green, 100)
+BLUE = GPIO.PWM(blue, 100)
+RED.start(100)
+GREEN.start(100)
+BLUE.start(100)
 
 ######## Definición de funciones ##################
 
@@ -313,6 +314,7 @@ def captureAndFind():
   global square
   global square2
   global raspiData
+  setColor(BLUE)
   cam = cv2.VideoCapture(0)
   ret, img = cam.read()
   # Si es la primera vez que se ejecuta la función, se busca la zona de trabajo,
@@ -322,6 +324,7 @@ def captureAndFind():
     print "El nuevo origen de coordenadas sera [",convertPixelsToMillimetres(bottomside_center_worzone[0]),",",convertPixelsToMillimetres(bottomside_center_worzone[1]),"] mm"
     print "Utilizando ese punto como nuevo SR."
     workzone2.append(workzone)
+    setColor(RED)
   findSquares(img)
   getColor(img)
   square2.append(square)
@@ -330,8 +333,10 @@ def captureAndFind():
   xFromArm = getXFromArm()
   yFromArm = getYFromArm()
   print "El cubo se encuentra en la posición [",xFromArm,",",yFromArm,"] mm respecto al brazo"
+  setColor(YELLOW)
   sendDataToArduino()
   waitForArduino()
+  setColor(GREEN)
   clean()
   cam.release()
 
@@ -352,4 +357,6 @@ if __name__ == '__main__':
     captureAndFind()
     print "#################################################"
   arduino.close()
+  setColor(WHITE)
+  time.sleep(3)
   GPIO.cleanup()
