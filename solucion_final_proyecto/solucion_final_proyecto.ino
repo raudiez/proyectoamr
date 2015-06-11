@@ -22,7 +22,7 @@ double lecturaLDR1 = 0, lecturaLDR2 = 0, lecturaLDR3 = 0;
 const int period = 4; // 2 ms cada paso
 
 //CNYs
-int lecturaCNY1 = 0, lecturaCNY2 = 0;
+int lecturaCNY1 = 0, lecturaCNY2 = 0, umbralCNY = 500;
 
 //Contadores para las caras de los cubos
 int caras_analizadas = 0, negras = 0;
@@ -159,7 +159,7 @@ void loop() {
 void trabajo_brazo(){
   mover_brazo(x,y,-4.0,angulo); //Se le manda la x e y recibidas desde la Raspberry
   delay(500);
-  //cerrar_pinza();
+  cerrar_pinza();
   delay(500);
   subir_brazo();
 
@@ -182,15 +182,15 @@ void trabajo_brazo(){
   delay(500);
   subir_brazo();
   cubeta3();// FIN LINEAS DE PRUEBA*/
-/*
-  plataforma();
+
+  plataforma2();
   delay(500);
   abrir_pinza();
   delay(500);
   subir_brazo();
   for(int i = 0; i<=3;i++){
     lecturaCNY1 = lectura_CNY(CNY_Pin1);
-    if(lecturaCNY1 > 600){
+    if(lecturaCNY1 > umbralCNY){
       negras++;
     }
     caras_analizadas++;
@@ -200,9 +200,8 @@ void trabajo_brazo(){
   }
   delay(30);
   vuelve_motor();
-
   lecturaCNY2 = lectura_CNY(CNY_Pin2);
-  if(lecturaCNY2 > 600){
+  if(lecturaCNY2 > umbralCNY){
     negras++;
   }
   caras_analizadas++;
@@ -223,7 +222,7 @@ void trabajo_brazo(){
     cubeta3();
   } //*/
 
-  //Serial.write("terminado\n"); //Si no funcionase, cambiar por Serial.println
+  Serial.write("terminado\n"); //Si no funcionase, cambiar por Serial.println
 }
 
 void vuelve_motor(){
@@ -448,7 +447,7 @@ void mapeo_servo5(double angulo){
 
 void abrir_pinza(){
   if(estado_pinza == 1){
-  myservo6.write(90);
+  myservo6.write(100);
   estado_pinza = 0;
  }
 }
@@ -474,9 +473,7 @@ void calibrar_pinza(){
   delay(1000);
   myservo6.write(0);
   delay(1000);
-  myservo6.write(30);
-  delay(1000);
-  myservo6.write(90);
+  myservo6.write(100);
   delay(1000);
 }
 
