@@ -281,10 +281,10 @@ def waitForArduino():
     contLED+=1
     if contLED == 10 and arduinoState != 'terminado\n':
       setColorLed(ORANGE)
-    else if contLED == 20 and arduinoState != 'terminado\n':
+    elif contLED == 20 and arduinoState != 'terminado\n':
       setColorLed(RED)
       contLED = 0
-    else if arduinoState == 'terminado\n':
+    elif arduinoState == 'terminado\n':
       wait = False
       setColorLed(GREEN)
       time.sleep(0.5)
