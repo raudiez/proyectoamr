@@ -78,8 +78,8 @@ void loop() {
 // (o float en este caso, puesto que no existe función toDouble() de
 // String), para después pasarlo a la función mover_brazo
 
-  /*//PRUEBAS DE MOVIMIENTO A PLATAFORMA
-  plataforma2();
+ /* ///PRUEBAS DE MOVIMIENTO A PLATAFORMA
+  plataforma();
   delay(500);
   subir_brazo();// FIN PRUEBAS DE MOVIMIENTO A PLATAFORMA */
   /*// PRUEBA DE CNYS
@@ -157,13 +157,13 @@ void loop() {
 }//loop
 
 void trabajo_brazo(){
-  mover_brazo(x,y,-4.0); //Se le manda la x e y recibidas desde la Raspberry
+  mover_brazo(x,y,-4.0,angulo); //Se le manda la x e y recibidas desde la Raspberry
   delay(500);
-  cerrar_pinza();
+  //cerrar_pinza();
   delay(500);
   subir_brazo();
 
-  // LINEAS DE PRUEBA DE TRABAJO BRAZO SIN LECTURAS DE CNY
+ /* // LINEAS DE PRUEBA DE TRABAJO BRAZO SIN LECTURAS DE CNY
   plataforma2();
   delay(500);
   abrir_pinza();
@@ -223,7 +223,7 @@ void trabajo_brazo(){
     cubeta3();
   } //*/
 
-  Serial.write("terminado\n"); //Si no funcionase, cambiar por Serial.println
+  //Serial.write("terminado\n"); //Si no funcionase, cambiar por Serial.println
 }
 
 void vuelve_motor(){
@@ -242,20 +242,20 @@ void vuelve_motor(){
 }
 
 void mover_motor(){
- for (int i = 0; i < 128; i++){
-   step1();
-   step2();
-   step3();
-   step4();
+  for (int i = 0; i < 128; i++){
+    step1();
+    step2();
+    step3();
+    step4();
   }
 }
 
 void mover_motor_inv(){
- for (int i = 0; i < 128; i++){
-   step4();
-   step3();
-   step2();
-   step1();
+  for (int i = 0; i < 128; i++){
+    step4();
+    step3();
+    step2();
+    step1();
   }
 }
 
@@ -293,9 +293,9 @@ int lectura_CNY(const int pin){
   return Valor_CNY;
 }
 
-void mover_brazo(double x, double y, double z){
+void mover_brazo(double x, double y, double z, double angulo_pinza){
   if(x > 0){ x+=30.0; y-=23;}
-  calcula_angulos(x,y+50.0,75.0+z);
+  calcula_angulos(x,y+50.0,75.0+z,angulo_pinza);
   delay(1000);
 }
 
@@ -353,9 +353,9 @@ void plataforma(){
 void plataforma2(){
   myservo5.write(161);
   myservo1.write(180);
-  mapeo_servo4(115);
-  mapeo_servo2(99);
-  mapeo_servo3(54);
+  mapeo_servo4(116);
+  mapeo_servo2(102);
+  mapeo_servo3(53);
 }
 
 void subir_brazo(){
@@ -480,7 +480,7 @@ void calibrar_pinza(){
   delay(1000);
 }
 
-void calcula_angulos(double x, double y, double z){
+void calcula_angulos(double x, double y, double z, double angulo_pinza){
   x_cuadrado = pow(x,2);
   y_cuadrado = pow(y,2);
 
@@ -513,6 +513,12 @@ void calcula_angulos(double x, double y, double z){
   angulo_muneca = 180+(cabeceo- angulo_brazo - angulo_antebrazo);
 
   mapeo_servo1(giro);
+  //Para que siga estando la pinza recta respecto al rectángulo de referencia:
+  double giro_pinza = giro - 90;
+  //Para girar lo que esté girado el cubo respecto a su eje:
+  giro_pinza = giro_pinza - angulo_pinza;
+  mapeo_servo5(90+giro_pinza);
+
   mapeo_servo4(angulo_muneca+20);
   if (angulo_antebrazo <=38){
     mapeo_servo3(38);
