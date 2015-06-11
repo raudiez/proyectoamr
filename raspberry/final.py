@@ -25,6 +25,7 @@ cont = 0
 new_center = [0,0]
 sideWristAngle = [0,0]
 raspiData = ""
+contLED = 0
 
 # Variables finales a enviar a Arduino (estas variables se reinicializan para
 # cada nuevo cubo encontrado):
@@ -44,6 +45,7 @@ GREEN=[0,255,0]
 YELLOW=[255,255,0]
 ORANGE=[255,150,0]
 WHITE=[255,255,255]
+BLACK=[0,0,0]
 
 ### LED RGB ###
 # Mapeo de pines del LED.
@@ -270,12 +272,26 @@ def sendDataToArduino():
 # Función que espera hasta que Arduino termine su función y envíe un mensaje
 # de finalización de tarea.
 def waitForArduino():
+  global contLED
   wait = True
   arduinoState = ''
+  setColorLed(RED)
   while wait :
     arduinoState = arduino.readline()
-    if arduinoState == 'terminado\n':
+    contLED+=1
+    if contLED == 10 and arduinoState != 'terminado\n':
+      setColorLed(ORANGE)
+    else if contLED == 20 and arduinoState != 'terminado\n':
+      setColorLed(RED)
+      contLED = 0
+    else if arduinoState == 'terminado\n':
       wait = False
+      setColorLed(GREEN)
+      time.sleep(0.5)
+      setColorLed(BLACK)
+      time.sleep(0.5)
+      setColorLed(GREEN)
+      contLED = 0
 
 # Función que limpia las variables globales que se reutilizan en el
 # programa principal.
@@ -302,6 +318,7 @@ def clean():
   xFromArm = 0
   yFromArm = 0
   raspiData = ""
+  contLED = 0
 
 # Función que realiza una captura con la cámara, busca los cubos, e imprime
 # por pantalla información como ángulos, posición, y los pinta en la captura.
@@ -314,7 +331,7 @@ def captureAndFind():
   global square
   global square2
   global raspiData
-  setColor(BLUE)
+  setColorLed(YELLOW)
   cam = cv2.VideoCapture(0)
   ret, img = cam.read()
   # Si es la primera vez que se ejecuta la función, se busca la zona de trabajo,
@@ -324,7 +341,7 @@ def captureAndFind():
     print "El nuevo origen de coordenadas sera [",convertPixelsToMillimetres(bottomside_center_worzone[0]),",",convertPixelsToMillimetres(bottomside_center_worzone[1]),"] mm"
     print "Utilizando ese punto como nuevo SR."
     workzone2.append(workzone)
-    setColor(RED)
+    setColorLed(BLUE)
   findSquares(img)
   getColor(img)
   square2.append(square)
@@ -333,16 +350,14 @@ def captureAndFind():
   xFromArm = getXFromArm()
   yFromArm = getYFromArm()
   print "El cubo se encuentra en la posición [",xFromArm,",",yFromArm,"] mm respecto al brazo"
-  setColor(YELLOW)
   sendDataToArduino()
   waitForArduino()
-  setColor(GREEN)
   clean()
   cam.release()
 
 # Función que enciende el LED RGB por el color dado en ese formato: [R,G,B]
 # De 0 a 255 (mín - máx).
-def setColor(rgb = []):
+def setColorLed(rgb = []):
   # Convierte 0-255 a 0-100, y cambia el valor al inverso en el rango 0-255,
   # para utilizar un LED de ánodo común.
   rgb = [(abs(x-255) / 255.0) * 100 for x in rgb]
@@ -357,6 +372,6 @@ if __name__ == '__main__':
     captureAndFind()
     print "#################################################"
   arduino.close()
-  setColor(WHITE)
+  setColorLed(WHITE)
   time.sleep(3)
   GPIO.cleanup()
