@@ -28,7 +28,7 @@ int lecturaCNY1 = 0, lecturaCNY2 = 0, umbralCNY = 500; //variables para almacena
 int caras_analizadas = 0, negras = 0; //variables para llevar la cuenta de las caras que se han procesado y del número de caras negras
 
 //Comunicación
-double x = 0.0, y = 0.0, angulo = 0.0; //variables para la comunicación. Coordenadas x e y para el movimiento del brazo y el ángulo de giro de la muñeca al coger los cubos 
+double x = 0.0, y = 0.0, angulo = 0.0; //variables para la comunicación. Coordenadas x e y para el movimiento del brazo y el ángulo de giro de la muñeca al coger los cubos
 boolean varX = false, varY = false, varAnguloDecimal = false, colorCaraSuperior = false; //variables para el control de la comunicación (comprobar que se haya realizado bien)
 String auxiliar = ""; //cadena en la que se almacena lo recibido por la Raspberry
 int colorSuperior = 0; //variable que controla el color de la cara superior de los cubos detectada por la cámara
@@ -82,10 +82,6 @@ void loop() {
 // (o float en este caso, puesto que no existe función toDouble() de
 // String), para después pasarlo a la función trabajo_brazo
 
- /* ///PRUEBAS DE MOVIMIENTO A PLATAFORMA
-  plataforma();
-  delay(500);
-  subir_brazo();// FIN PRUEBAS DE MOVIMIENTO A PLATAFORMA */
   /*// PRUEBA DE CNYS
   Serial.print("CNY abajo :");
   Serial.println(lectura_CNY(CNY_Pin2));
@@ -117,7 +113,7 @@ void loop() {
     varY = false;
 
     for (int i = 0; i < lecturaSerie.length();i++){ //Se recorre la cadena que manda la Raspberry
-      if(!colorCaraSuperior){ 
+      if(!colorCaraSuperior){
         letra = lecturaSerie.charAt(i); //En cada comprobación se lee caracter a caracter
         if(letra !=','){ //Se comprueba que el caracter no es una coma
           auxiliar += letra; //Se añade a la cadena auxiliar
@@ -171,27 +167,6 @@ void trabajo_brazo(){
   cerrar_pinza(); //se cierra la pinza para coger el cubo
   delay(500);
   subir_brazo(); //se le sube la altura del brazo para que no choque con el suelo y se manda el brazo al reposo
-
- /* // LINEAS DE PRUEBA DE TRABAJO BRAZO SIN LECTURAS DE CNY
-  plataforma2();
-  delay(500);
-  abrir_pinza();
-  delay(500);
-  subir_brazo();
-  for(int i = 0; i<=3;i++){
-    mover_motor();
-    stopMotor();
-    delay(50);
-  }
-  delay(30);
-  vuelve_motor();
-  plataforma();
-  delay(500);
-  cerrar_pinza();
-  delay(500);
-  subir_brazo();
-  cubeta3();// FIN LINEAS DE PRUEBA*/
-
   plataforma2(); //se manda el cubo a la plataforma giratoria
   delay(500);
   abrir_pinza(); //se suelta el cubo
@@ -607,7 +582,7 @@ void calcula_angulos(double x, double y, double z, double angulo_pinza){
   afx = abs(cos(cabeceo))*longitud_muneca; //se calcula el incremento de x
 
   x_prima = modulo; //se establece x' como el módulo
-  ladoB = x_prima - afx; 
+  ladoB = x_prima - afx;
   afy = abs(sin(cabeceo))*longitud_muneca; //se calcula el incremento de y
   ladoA = y_prima + afy - altura_hombro;
 
@@ -616,7 +591,7 @@ void calcula_angulos(double x, double y, double z, double angulo_pinza){
   operacion_beta = ((pow(longitud_brazo,2)) - (pow(longitud_antebrazo,2)) + (pow(hipotenusa,2)))/(2*longitud_brazo*hipotenusa); //teorema del coseno
   beta = abs(acos(operacion_beta)); //se calcula el ángulo beta
 
-  angulo_brazo = ((alfa*360)/(2*PI))+((beta*360)/(2*PI)); //se pasa el angulo del hombro a grados 
+  angulo_brazo = ((alfa*360)/(2*PI))+((beta*360)/(2*PI)); //se pasa el angulo del hombro a grados
   operacion_gamma = ((pow(longitud_brazo,2)) + (pow(longitud_antebrazo,2)) - (pow(hipotenusa,2)))/(2*longitud_brazo*longitud_antebrazo); //teorema del coseno
   gamma = ((acos(operacion_gamma))*360)/(2*PI); //se calcula el ángulo gamma y se pasa a grados
   angulo_antebrazo = gamma; //se establece el ángulo del antebrazo (codo) como gamma
