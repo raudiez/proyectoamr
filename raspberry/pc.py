@@ -9,10 +9,11 @@ import serial
 # import RPi.GPIO as GPIO
 
 ########## Variables globales #################
-arduino = serial.Serial('/dev/ttyACM0', 9600)
+arduino = serial.Serial('/dev/ttyACM3', 9600)
 workzone = []
-workzone2 = []
 square2 = []
+top_limit = []
+bottom_limit = []
 topside_center_workzone = [0,0]
 bottomside_center_worzone = [0,0]
 square = [] # Cubos encontrados, respecto a (0,0) de img.
@@ -34,7 +35,7 @@ yFromArm = 0 # Y respercto al brazo robótico.
 # Datos conocidos:
 yDistanceFromArm = 124.8 # Distancia desde el nuevo SR (0,0) al (0,0) del brazo, en mm.
 
-# Colores para pintar:
+# Colores para LED RGB:
 RED=[255,0,0]
 BLUE=[0,0,255]
 CYAN=[0,150,255]
@@ -110,25 +111,32 @@ def findSquares(img):
                     break
                 max_cos = np.max([angle_cos( cnt[i], cnt[(i+1) % 4], cnt[(i+2) % 4] ) for i in xrange(4)])
                 if max_cos < 0.1 and not encontrado:
-                  # Se almacena el contorno del cuadrado con sus vértices, se almacena
-                  # como analizado también.
-                  square = np.copy(cnt)
-                  previous.append(cnt[0])
-                  previous.append(cnt[1])
-                  previous.append(cnt[2])
-                  previous.append(cnt[3])
-                  # Se ordenan los vértices del cubo, para luego usarlos para
-                  # los ángulos.
-                  cubo = np.copy(cnt)
-                  dt = [('col1', cubo.dtype),('col2', cubo.dtype)]
-                  aux = cubo.ravel().view(dt)
-                  aux.sort(order=['col2','col1'])
-                  sorted_cube = np.copy(cubo)
-                  # Se obtienen el centro del cuadrado, y se saca el color de la cara.
+                  # Se obtienen el centro del cuadrado.
                   center = [(cnt[0][0]+cnt[2][0])/2,(cnt[0][1]+cnt[2][1])/2]
-                  cont+=1
-                  print "Encontrado cubo numero",cont
-                  cuboFound = True
+                  if center[0] > top_limit[0][1] and center[0] < top_limit[1][0] and center[1] > top_limit[0][1] and center[1] < bottom_limit[0][1] :
+                    # Se almacena el contorno del cuadrado con sus vértices, se almacena
+                    # como analizado también.
+                    square = np.copy(cnt)
+                    previous.append(cnt[0])
+                    previous.append(cnt[1])
+                    previous.append(cnt[2])
+                    previous.append(cnt[3])
+                    # Se ordenan los vértices del cubo, para luego usarlos para
+                    # los ángulos.
+                    cubo = np.copy(cnt)
+                    dt = [('col1', cubo.dtype),('col2', cubo.dtype)]
+                    aux = cubo.ravel().view(dt)
+                    aux.sort(order=['col2','col1'])
+                    sorted_cube = np.copy(cubo)
+                    cont+=1
+                    print "Encontrado cubo numero",cont
+                    cuboFound = True
+                  else :
+                    center = []
+                    previous.append(cnt[0])
+                    previous.append(cnt[1])
+                    previous.append(cnt[2])
+                    previous.append(cnt[3])
 
 # Se encuentra un rectángulo de area mayor que los cubos, que los contiene y
 # vale de referencia para ubicación. Hace prácticamente lo mismo que la función
@@ -180,8 +188,12 @@ def getReference():
   top.sort
   bottom.sort
   global topside_center_workzone
+  global top_limit
+  top_limit = np.copy(top)
   topside_center_workzone = [(top[0][0]+top[1][0])/2,(top[0][1]+top[1][1])/2]
   global bottomside_center_worzone
+  global bottom_limit
+  bottom_limit = np.copy(bottom)
   bottomside_center_worzone = [(bottom[0][0]+bottom[1][0])/2,(bottom[0][1]+bottom[1][1])/2]
 
 # Función que obtiene nuevas coordenadas para los centros de los cubos y los lados
@@ -274,12 +286,8 @@ def waitForArduino():
   # setColorLed(RED)
   while wait :
     arduinoState = arduino.readline()
-    # time.sleep(0.25)
-    # setColorLed(BLACK)
-    # time.sleep(0.25)
-    # setColorLed(RED)
     if arduinoState == 'terminado\n':
-      # wait = False
+      wait = False
       # setColorLed(GREEN)
       # time.sleep(0.5)
       # setColorLed(BLACK)
@@ -319,7 +327,6 @@ def captureAndFind():
   global xFromArm
   global yFromArm
   global workzone
-  global workzone2
   global square
   global square2
   global raspiData
@@ -333,7 +340,6 @@ def captureAndFind():
     findWorkzone(img)
     print "El nuevo origen de coordenadas sera [",convertPixelsToMillimetres(bottomside_center_worzone[0]),",",convertPixelsToMillimetres(bottomside_center_worzone[1]),"] mm"
     print "Utilizando ese punto como nuevo SR."
-    workzone2.append(workzone)
     # setColorLed(BLUE)
   findSquares(img)
   if center == [] or center == [0,0]:
@@ -370,4 +376,4 @@ if __name__ == '__main__':
   arduino.close()
   # setColorLed(WHITE)
   # time.sleep(3)
-  GPIO.cleanup()
+  # GPIO.cleanup()
