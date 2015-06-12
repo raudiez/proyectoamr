@@ -34,7 +34,7 @@ yFromArm = 0 # Y respercto al brazo robótico.
 # Datos conocidos:
 yDistanceFromArm = 124.8 # Distancia desde el nuevo SR (0,0) al (0,0) del brazo, en mm.
 
-# Colores para pintar:
+# Colores para LED RGB:
 RED=[255,0,0]
 BLUE=[0,0,255]
 CYAN=[0,150,255]
