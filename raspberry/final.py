@@ -352,8 +352,8 @@ def captureAndFind():
   clean()
   cam.release()
 
-Función que enciende el LED RGB por el color dado en ese formato: [R,G,B]
-De 0 a 255 (mín - máx).
+# Función que enciende el LED RGB por el color dado en ese formato: [R,G,B]
+# De 0 a 255 (mín - máx).
 def setColorLed(rgb = []):
   # Convierte 0-255 a 0-100, y cambia el valor al inverso en el rango 0-255,
   # para utilizar un LED de ánodo común.
