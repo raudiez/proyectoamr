@@ -369,6 +369,9 @@ def setColorLed(rgb = []):
   BLUEPIN.ChangeDutyCycle(rgb[2])
 
 if __name__ == '__main__':
+  print "###################################################"
+  print "############### Iniciado programa #################"
+  print "###################################################"
   while not cubes404 : # Se itera mientras se encuentren cubos.
     # Se realiza una captura con la cámara y se busca un cubo.
     captureAndFind()
