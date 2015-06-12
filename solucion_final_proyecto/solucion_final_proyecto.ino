@@ -22,7 +22,7 @@ double lecturaLDR1 = 0, lecturaLDR2 = 0, lecturaLDR3 = 0; //variables para almac
 const int period = 4; // periodo del motor. 4 ms cada paso. A menos periodo irá mas rápido y viceversa
 
 //CNYs
-int lecturaCNY1 = 0, lecturaCNY2 = 0, umbralCNY = 500; //variables para almacenar los valores de los CNYs y establecer el umbral de lectura
+int lecturaCNY1 = 0, lecturaCNY2 = 0, umbralCNY = 750; //variables para almacenar los valores de los CNYs y establecer el umbral de lectura
 
 //Contadores para las caras de los cubos
 int caras_analizadas = 0, negras = 0; //variables para llevar la cuenta de las caras que se han procesado y del número de caras negras
@@ -82,28 +82,6 @@ void loop() {
 // (o float en este caso, puesto que no existe función toDouble() de
 // String), para después pasarlo a la función trabajo_brazo
 
-  /*// PRUEBA DE CNYS
-  Serial.print("CNY abajo :");
-  Serial.println(lectura_CNY(CNY_Pin2));
-  Serial.println(lectura_CNY(CNY_Pin1));
-  mover_motor();
-  stopMotor();
-  delay(50);
-  Serial.println(lectura_CNY(CNY_Pin1));
-  mover_motor();
-  stopMotor();
-  delay(50);
-  Serial.println(lectura_CNY(CNY_Pin1));
-  mover_motor();
-  stopMotor();
-  delay(50);
-  Serial.println(lectura_CNY(CNY_Pin1));
-  mover_motor();
-  stopMotor();
-  delay(50);
-  vuelve_motor();//FIN PRUEBA DE CNYS*/
-
-
   if(Serial.available()){
     String lecturaSerie = Serial.readString(); //Se lee la cadena que se le manda desde la Raspberry al Arduino
     auxiliar = ""; //Se ponen las banderas a falso para indicar de que no se ha recibido nada
@@ -154,6 +132,7 @@ void loop() {
     trabajo_brazo(); //Se llama a la función donde se realiza todo lo del brazo y los sensores (así como el movimiento del motor)
   }//if-serial.available*/
   comprueba_LDRs(); //Se leen valores de las LDRs para poder encender o apagar los LEDs
+  clean();
 }//loop
 
 /*
@@ -161,50 +140,37 @@ void loop() {
   girar el motor, y en función del color de las caras del cubo, llevarlo a su cubeta correspondiente
 */
 
+void clean(){
+  x = 0.0;
+  y = 0.0;
+  angulo = 0.0;
+  lecturaCNY1 = 0;
+  lecturaCNY2 = 0;
+  caras_analizadas = 0;
+  negras = 0;
+  colorSuperior = 0;
+}
+
 void trabajo_brazo(){
+  abrir_pinza(); //se abre la pinza
+  delay(500);
   mover_brazo(x,y,-4.0,angulo); //Se le manda la x e y recibidas desde la Raspberry, además del ángulo de la muñeca
   delay(500);
   cerrar_pinza(); //se cierra la pinza para coger el cubo
   delay(500);
   subir_brazo(); //se le sube la altura del brazo para que no choque con el suelo y se manda el brazo al reposo
-  plataforma2(); //se manda el cubo a la plataforma giratoria
-  delay(500);
-  abrir_pinza(); //se suelta el cubo
-  delay(500);
-  subir_brazo(); //se sube el brazo y se manda al reposo
-  for(int i = 0; i<=3;i++){ //se itera 4 veces para leer las caras del cubo que está en la plataforma (la cara superior la obtiene la cámara y la inferior el CNY de abajo de la plataforma)
-    lecturaCNY1 = lectura_CNY(CNY_Pin1); //se lee el CNY de la plataforma
-    if(lecturaCNY1 > umbralCNY){ //si el valor leído supera el umbral es que se ha detectado una cara negra
-      negras++; //se aumenta el contador de caras negras
-    }
-    caras_analizadas++; //se aumenta el contador de caras analaizadas
-    mover_motor(); //se mueve el motor en el sentido de las agujas del reloj
-    stopMotor(); //y se frena para que le de tiempo a leer cada cara
-    delay(50);
+  detecta_caras();//Examina las caras del cubo.
+  while(negras > 2){
+    negras = 0;
+    detecta_caras();//Vuelve a examinarlo.
   }
-  delay(30);
-  vuelve_motor(); //se gira el motor en el sentido contrario a las agujas del reloj para que no se enrolle el cable del motor
-  lecturaCNY2 = lectura_CNY(CNY_Pin2); //se lee la cara inferior del cubo
-  if(lecturaCNY2 > umbralCNY){ //si el valor es mayor que el umbral
-    negras++; //aumenta contador de negras
-  }
-  caras_analizadas++; //aumenta contador de caras analizadas
-  if(colorSuperior < 100){ //si el color de la cara superior detectado por la camara es menor al umbral
-    negras++; //aumenta contador de negras
-  }
-  caras_analizadas++; //aumenta contador de caras analizadas
-  plataforma(); //manda el brazo hacia la plataforma
-  delay(500);
-  cerrar_pinza(); //coge el cubo
-  delay(500);
-  subir_brazo(); //sube la altura del brazo y lo manda al reposo
   if(negras == 0){ //si el cubo no tiene caras negras
     cubeta1(); //lo manda a la cubeta de la izquierda
   }else if(negras == 1){ //si el cubo tiene 1 cara negra
     cubeta2(); //lo manda a la cubeta del centro
   }else if(negras == 2){//si el cubo tiene 2 caras negras
     cubeta3(); //lo manda a la cubeta de la derecha
-  } //*/
+  }//*/
 
   Serial.write("terminado\n"); //se le manda la cadena "terminado" a la Raspberry para indicarle de que ha depositado uno de los cubos
 }
@@ -216,17 +182,7 @@ void trabajo_brazo(){
 
 void vuelve_motor(){
   mover_motor_inv(); //Se llama a esta función cuatro veces pues es la encargada de poner los pines del motor como LOW y para que desenrolle bien el cable del motor
-  stopMotor();
-  delay(50);
-  mover_motor_inv();
-  stopMotor();
-  delay(50);
-  mover_motor_inv();
-  stopMotor();
-  delay(50);
-  mover_motor_inv();
-  stopMotor();
-  delay(50);
+  //delay(500);
 }
 
 /*
@@ -234,7 +190,7 @@ void vuelve_motor(){
 */
 
 void mover_motor(){
-  for (int i = 0; i < 128; i++){
+  for (int i = 0; i < 132; i++){
     step1();
     step2();
     step3();
@@ -247,12 +203,13 @@ void mover_motor(){
 */
 
 void mover_motor_inv(){
-  for (int i = 0; i < 128; i++){
+  for (int i = 0; i < 415; i++){
     step4();
     step3();
     step2();
     step1();
   }
+  stopMotor();
 }
 
 /*
@@ -307,7 +264,10 @@ int lectura_CNY(const int pin){
 */
 
 void mover_brazo(double x, double y, double z, double angulo_pinza){
-  if(x > 0){ x+=30.0; y-=23;} //si la x está en el primer cuadrante, se ajustan las posiciones de x e y
+  if(x > 30){ x+=25.0;}
+  if(x > 0){ x+=10.0; y-=23;}
+  if(x < -30){ x-=12.0; y-=3;}
+  if(x < 10 && x > -10 && y < 96) { y-=10;}
   calcula_angulos(x,y+50.0,75.0+z,angulo_pinza); //se calcula la cinemática inversa teniendo en cuenta las distancias en nuestro sistema de referencia
   delay(1000);
 }
@@ -384,20 +344,53 @@ void plataforma(){
   myservo5.write(161);
   myservo1.write(180);
   mapeo_servo4(120);
-  mapeo_servo2(97);
-  mapeo_servo3(49);
+  mapeo_servo3(51);
+  mapeo_servo2(95);
 }
 
 /*
-  Función para mandar a la plataforma la primera vez que coge el cubo para soltarlo. Se ajustan los ángulos correspondientes.
+
+  Función que realiza los movimientos para la detección de caras del cubo por
+  medio de los sensores CNY, y utilizando la cara ya analizada por la
+  cámara.
+
 */
 
-void plataforma2(){
-  myservo5.write(161);
-  myservo1.write(180);
-  mapeo_servo4(116);
-  mapeo_servo2(102);
-  mapeo_servo3(53);
+void detecta_caras(){
+  plataforma(); //se manda el cubo a la plataforma giratoria
+  delay(500);
+  abrir_pinza(); //se suelta el cubo
+  delay(500);
+  subir_brazo(); //se sube el brazo y se manda al reposo
+
+  lecturaCNY2 = lectura_CNY(CNY_Pin2); //se lee la cara inferior del cubo
+  if(lecturaCNY2 > umbralCNY){ //si el valor es mayor que el umbral
+    negras++; //aumenta contador de negras
+  }
+  caras_analizadas++; //aumenta contador de caras analizadas
+  if(colorSuperior < 100){ //si el color de la cara superior detectado por la camara es menor al umbral
+    negras++; //aumenta contador de negras
+  }
+  caras_analizadas++; //aumenta contador de caras analizadas
+  if(negras < 2){
+    for(int i = 0; i<=3;i++){ //se itera 4 veces para leer las caras del cubo que está en la plataforma (la cara superior la obtiene la cámara y la inferior el CNY de abajo de la plataforma)
+      lecturaCNY1 = lectura_CNY(CNY_Pin1); //se lee el CNY de la plataforma
+      if(lecturaCNY1 > umbralCNY){ //si el valor leído supera el umbral es que se ha detectado una cara negra
+        negras++; //se aumenta el contador de caras negras
+      }
+      caras_analizadas++; //se aumenta el contador de caras analaizadas
+      mover_motor(); //se mueve el motor en el sentido de las agujas del reloj
+      stopMotor(); //y se frena para que le de tiempo a leer cada cara
+      delay(500);
+    }
+    delay(500);
+    vuelve_motor(); //se gira el motor en el sentido contrario a las agujas del reloj para que no se enrolle el cable del motor
+  }
+  plataforma(); //manda el brazo hacia la plataforma
+  delay(500);
+  cerrar_pinza(); //coge el cubo
+  delay(500);
+  subir_brazo(); //sube la altura del brazo y lo manda al reposo
 }
 
 /*
