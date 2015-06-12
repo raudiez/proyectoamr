@@ -1,15 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#### TODO: - Comunicación con Arduino mediante serial.
-####        - Pruebas del programa.
-
 import numpy as np
 import cv2
 from math import atan, degrees , sqrt, pow
 import serial
-# import time
-# import RPi.GPIO as GPIO
+import time
+import RPi.GPIO as GPIO
 
 ########## Variables globales #################
 arduino = serial.Serial('/dev/ttyACM0', 9600)
@@ -53,21 +50,21 @@ red = 18
 green = 27 #Pin 27 en B+, 21 en B.
 blue = 17
 
-# # Configuración GPIO.
-# GPIO.setmode(GPIO.BCM)
-# GPIO.setwarnings(False)
-# GPIO.setup(red, GPIO.OUT)
-# GPIO.setup(green, GPIO.OUT)
-# GPIO.setup(blue, GPIO.OUT)
+# Configuración GPIO.
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(red, GPIO.OUT)
+GPIO.setup(green, GPIO.OUT)
+GPIO.setup(blue, GPIO.OUT)
 
-# # Configuración de colores usando PWM por software. Control individual del
-# # brillo de cada color.
-# REDPIN = GPIO.PWM(red, 100)
-# GREENPIN = GPIO.PWM(green, 100)
-# BLUEPIN = GPIO.PWM(blue, 100)
-# REDPIN.start(100)
-# GREENPIN.start(100)
-# BLUEPIN.start(100)
+# Configuración de colores usando PWM por software. Control individual del
+# brillo de cada color.
+REDPIN = GPIO.PWM(red, 100)
+GREENPIN = GPIO.PWM(green, 100)
+BLUEPIN = GPIO.PWM(blue, 100)
+REDPIN.start(100)
+GREENPIN.start(100)
+BLUEPIN.start(100)
 
 ######## Definición de funciones ##################
 
@@ -274,21 +271,21 @@ def sendDataToArduino():
 def waitForArduino():
   wait = True
   arduinoState = ''
-  # setColorLed(RED)
+  setColorLed(RED)
   while wait :
     arduinoState = arduino.readline()
-    # time.sleep(0.25)
-    # setColorLed(BLACK)
-    # time.sleep(0.25)
-    # setColorLed(RED)
+    time.sleep(0.25)
+    setColorLed(BLACK)
+    time.sleep(0.25)
+    setColorLed(RED)
     if arduinoState == 'terminado\n':
       wait = False
-      # setColorLed(GREEN)
-      # time.sleep(0.5)
-      # setColorLed(BLACK)
-      # time.sleep(0.5)
-      # setColorLed(GREEN)
-      # contLED = 0
+      setColorLed(GREEN)
+      time.sleep(0.5)
+      setColorLed(BLACK)
+      time.sleep(0.5)
+      setColorLed(GREEN)
+      contLED = 0
 
 # Función que limpia las variables globales que se reutilizan en el
 # programa principal.
@@ -328,7 +325,7 @@ def captureAndFind():
   global square2
   global raspiData
   global cubes404
-  # setColorLed(YELLOW)
+  setColorLed(YELLOW)
   cam = cv2.VideoCapture(0)
   ret, img = cam.read()
   # Si es la primera vez que se ejecuta la función, se busca la zona de trabajo,
@@ -338,7 +335,7 @@ def captureAndFind():
     print "El nuevo origen de coordenadas sera [",convertPixelsToMillimetres(bottomside_center_worzone[0]),",",convertPixelsToMillimetres(bottomside_center_worzone[1]),"] mm"
     print "Utilizando ese punto como nuevo SR."
     workzone2.append(workzone)
-    # setColorLed(BLUE)
+    setColorLed(BLUE)
   findSquares(img)
   if center == [] or center == [0,0]:
     print "No se han encontrado cubos."
@@ -356,15 +353,15 @@ def captureAndFind():
   clean()
   cam.release()
 
-# Función que enciende el LED RGB por el color dado en ese formato: [R,G,B]
-# De 0 a 255 (mín - máx).
-# def setColorLed(rgb = []):
-#   # Convierte 0-255 a 0-100, y cambia el valor al inverso en el rango 0-255,
-#   # para utilizar un LED de ánodo común.
-#   rgb = [(abs(x-255) / 255.0) * 100 for x in rgb]
-#   REDPIN.ChangeDutyCycle(rgb[0])
-#   GREENPIN.ChangeDutyCycle(rgb[1])
-#   BLUEPIN.ChangeDutyCycle(rgb[2])
+Función que enciende el LED RGB por el color dado en ese formato: [R,G,B]
+De 0 a 255 (mín - máx).
+def setColorLed(rgb = []):
+  # Convierte 0-255 a 0-100, y cambia el valor al inverso en el rango 0-255,
+  # para utilizar un LED de ánodo común.
+  rgb = [(abs(x-255) / 255.0) * 100 for x in rgb]
+  REDPIN.ChangeDutyCycle(rgb[0])
+  GREENPIN.ChangeDutyCycle(rgb[1])
+  BLUEPIN.ChangeDutyCycle(rgb[2])
 
 if __name__ == '__main__':
   while not cubes404 : # Se itera mientras se encuentren cubos.
@@ -372,6 +369,6 @@ if __name__ == '__main__':
     captureAndFind()
     print "#################################################"
   arduino.close()
-  # setColorLed(WHITE)
+  setColorLed(WHITE)
   time.sleep(3)
   GPIO.cleanup()
