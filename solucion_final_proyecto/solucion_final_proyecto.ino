@@ -22,7 +22,7 @@ double lecturaLDR1 = 0, lecturaLDR2 = 0, lecturaLDR3 = 0; //variables para almac
 const int period = 4; // periodo del motor. 4 ms cada paso. A menos periodo irá mas rápido y viceversa
 
 //CNYs
-int lecturaCNY1 = 0, lecturaCNY2 = 0, umbralCNY = 750; //variables para almacenar los valores de los CNYs y establecer el umbral de lectura
+int lecturaCNY1 = 0, lecturaCNY2 = 0, umbralCNY = 815; //variables para almacenar los valores de los CNYs y establecer el umbral de lectura
 
 //Contadores para las caras de los cubos
 int caras_analizadas = 0, negras = 0; //variables para llevar la cuenta de las caras que se han procesado y del número de caras negras
