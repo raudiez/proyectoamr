@@ -274,10 +274,6 @@ def waitForArduino():
   setColorLed(RED)
   while wait :
     arduinoState = arduino.readline()
-    time.sleep(1)
-    setColorLed(BLACK)
-    time.sleep(1)
-    setColorLed(RED)
     if arduinoState == 'terminado\n':
       wait = False
       setColorLed(GREEN)
