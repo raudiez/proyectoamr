@@ -276,6 +276,7 @@ def getDataString():
 def sendDataToArduino():
   global raspiData
   getDataString()
+  print "información a enviar:",raspiData
   arduino.write(raspiData)
 
 # Función que espera hasta que Arduino termine su función y envíe un mensaje
