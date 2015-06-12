@@ -337,10 +337,12 @@ def captureAndFind():
   # Si es la primera vez que se ejecuta la función, se busca la zona de trabajo,
   # que servirá como referencia.
   if cont == 0 :
+    print "Detectando zona de reconocimiento..."
     findWorkzone(img)
     print "El nuevo origen de coordenadas sera [",convertPixelsToMillimetres(bottomside_center_worzone[0]),",",convertPixelsToMillimetres(bottomside_center_worzone[1]),"] mm"
     print "Utilizando ese punto como nuevo SR."
     setColorLed(BLUE)
+  print "Buscando cubos..."
   findSquares(img)
   if center == [] or center == [0,0]:
     print "No se han encontrado cubos."
