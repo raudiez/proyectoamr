@@ -285,7 +285,6 @@ def waitForArduino():
       setColorLed(BLACK)
       time.sleep(0.5)
       setColorLed(GREEN)
-      contLED = 0
 
 # Función que limpia las variables globales que se reutilizan en el
 # programa principal.
