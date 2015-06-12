@@ -132,7 +132,6 @@ def findSquares(img):
                     print "Encontrado cubo numero",cont
                     cuboFound = True
                   else :
-                    print "cubo encontrado no valido"
                     center = []
                     previous.append(cnt[0])
                     previous.append(cnt[1])
