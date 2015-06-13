@@ -136,8 +136,7 @@ void loop() {
 }//loop
 
 /*
-  Esta función realiza el movimiento del brazo para llegar hacia el cubo determinado, cogerlo, llevarlo a la plataforma,
-  girar el motor, y en función del color de las caras del cubo, llevarlo a su cubeta correspondiente
+  Función que reinicializa las variables globales utilizadas.
 */
 
 void clean(){
@@ -150,6 +149,11 @@ void clean(){
   negras = 0;
   colorSuperior = 0;
 }
+
+/*
+  Esta función realiza el movimiento del brazo para llegar hacia el cubo determinado, cogerlo, llevarlo a la plataforma,
+  girar el motor, y en función del color de las caras del cubo, llevarlo a su cubeta correspondiente
+*/
 
 void trabajo_brazo(){
   abrir_pinza(); //se abre la pinza
